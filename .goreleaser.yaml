@@ -10,6 +10,7 @@ version: 2
 
 builds:
   - builder: bun
+    binary: pylee
     targets:
       - linux-x64-modern
       - linux-arm64
