@@ -7,6 +7,9 @@
   "module": "src/bin/cli.ts",
   "private": true,
   "scripts": {
+    "lint": "biome lint",
+		"format": "biome format",
+		"check": "biome check",
     "test": "bun test",
     "cli": "bun run ./src/bin/cli.ts"
   },
