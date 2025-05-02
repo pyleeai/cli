@@ -21,6 +21,7 @@
 		"@types/bun": "latest"
 	},
 	"dependencies": {
+		"@pyleeai/mcp-proxy-server": "0.4.1",
 		"@stricli/auto-complete": "^1.1.2",
 		"@stricli/core": "^1.1.2"
 	}
