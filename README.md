@@ -1,0 +1,2 @@
+# cli
+Pylee AI CLI
