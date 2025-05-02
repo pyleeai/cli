@@ -1,27 +1,27 @@
 {
-  "name": "@pyleeai/cli",
-  "description": "Pylee AI CLI",
-  "version": "0.2.0",
-  "license": "MIT",
-  "type": "module",
-  "module": "src/bin/cli.ts",
-  "private": true,
-  "scripts": {
-    "lint": "biome lint",
+	"name": "@pyleeai/cli",
+	"description": "Pylee AI CLI",
+	"version": "0.2.0",
+	"license": "MIT",
+	"type": "module",
+	"module": "src/bin/cli.ts",
+	"private": true,
+	"scripts": {
+		"lint": "biome lint",
 		"format": "biome format",
 		"check": "biome check",
-    "test": "bun test",
-    "cli": "bun run ./src/bin/cli.ts"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@types/bun": "latest"
-  },
-  "dependencies": {
-    "@stricli/core": "^1.1.2",
-    "@stricli/auto-complete": "^1.1.2"
-  }
+		"test": "bun test",
+		"cli": "bun run ./src/bin/cli.ts"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/bun": "latest"
+	},
+	"dependencies": {
+		"@stricli/auto-complete": "^1.1.2",
+		"@stricli/core": "^1.1.2"
+	}
 }
