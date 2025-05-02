@@ -21,7 +21,7 @@ const routes = buildRouteMap({
 });
 
 export const app = buildApplication(routes, {
-    name,
+    name: "pylee",
     versionInfo: {
         currentVersion: version,
     },
