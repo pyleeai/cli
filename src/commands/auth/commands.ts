@@ -1,7 +1,7 @@
 import { buildCommand, buildRouteMap } from "@stricli/core";
-import { status } from "./status";
 import { signin } from "./signin";
 import { signout } from "./signout";
+import { status } from "./status";
 
 export const statusCommand = buildCommand({
 	func: status,
