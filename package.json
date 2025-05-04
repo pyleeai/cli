@@ -22,8 +22,11 @@
 		"@types/bun": "latest"
 	},
 	"dependencies": {
-		"@pyleeai/mcp-proxy-server": "0.4.1",
+		"@pyleeai/mcp-proxy-server": "0.7.0",
 		"@stricli/auto-complete": "^1.1.2",
-		"@stricli/core": "^1.1.2"
+		"@stricli/core": "^1.1.2",
+		"conf": "^13.1.0",
+		"oidc-client-ts": "^3.2.0",
+		"open": "^10.1.2"
 	}
 }
