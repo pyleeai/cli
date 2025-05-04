@@ -1,5 +1,6 @@
 {
 	"name": "@pyleeai/cli",
+	"projectName": "pylee",
 	"description": "Pylee AI CLI",
 	"version": "0.3.0",
 	"license": "MIT",
