@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 import { run } from "@stricli/core";
-import { buildContext } from "../context";
 import { app } from "../app";
+import { buildContext } from "../context";
 
-const ctx = buildContext(process);
-await ctx.loadUserState();
-await run(app, process.argv.slice(2), ctx);
+const context = await buildContext(process);
+
+await run(app, process.argv.slice(2), context);
