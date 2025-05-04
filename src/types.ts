@@ -47,3 +47,12 @@ export interface LocalContext
 	signIn: () => Promise<User | null>;
 	signOut: () => Promise<void>;
 }
+
+export const ExitCode = {
+	SUCCESS: 0,
+	ERROR: 1,
+	FAILURE: 2,
+	UNAUTHORIZED: -4,
+} as const;
+
+export type ExitCode = (typeof ExitCode)[keyof typeof ExitCode];
