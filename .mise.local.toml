@@ -1,0 +1,5 @@
+[tools]
+bun = "latest"
+
+[env]
+mise.file = ".env.development" 
