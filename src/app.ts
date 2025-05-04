@@ -1,12 +1,13 @@
-import { buildApplication, buildRouteMap } from "@stricli/core";
 import {
 	buildInstallCommand,
 	buildUninstallCommand,
 } from "@stricli/auto-complete";
-import { version, description } from "../package.json";
-import { setupCommand } from "./commands/setup/command";
+import { buildApplication, buildRouteMap } from "@stricli/core";
+import { description, version } from "../package.json";
+import { projectName } from "../package.json" assert { type: "json" };
 import { authRoutes } from "./commands/auth/commands";
 import { proxyCommand } from "./commands/proxy/command";
+import { setupCommand } from "./commands/setup/command";
 
 const routes = buildRouteMap({
 	routes: {
@@ -20,6 +21,7 @@ const routes = buildRouteMap({
 	docs: {
 		brief: description,
 		hideRoute: {
+			setup: true,
 			install: true,
 			uninstall: true,
 		},
@@ -27,7 +29,7 @@ const routes = buildRouteMap({
 });
 
 export const app = buildApplication(routes, {
-	name: "pylee",
+	name: projectName,
 	versionInfo: {
 		currentVersion: version,
 	},

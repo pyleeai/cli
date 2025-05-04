@@ -1,23 +1,42 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { StricliAutoCompleteContext } from "@stricli/auto-complete";
-import type { CommandContext } from "@stricli/core";
+import { UserManager } from "oidc-client-ts";
+import { Navigator } from "./navigator";
+import { authServer } from "./server";
+import { settings } from "./settings";
+import type { LocalContext, User } from "./types";
 
-export interface LocalContext
-	extends CommandContext,
-		StricliAutoCompleteContext {
-	readonly process: NodeJS.Process;
-	readonly os: typeof os;
-	readonly fs: typeof fs;
-	readonly path: typeof path;
-}
+export async function buildContext(
+	process: NodeJS.Process,
+): Promise<LocalContext> {
+	const navigator = new Navigator();
+	const userManager = new UserManager(settings, navigator);
 
-export function buildContext(process: NodeJS.Process): LocalContext {
 	return {
-		process,
 		os,
 		fs,
 		path,
+		process,
+		user: async () => {
+			const user = await userManager.signinSilent().catch(() => null);
+			await userManager.storeUser(user);
+			return user;
+		},
+		signIn: async () => {
+			let user: User | null = null;
+			const auth = authServer({
+				signinRedirectCallback: async (url) => {
+					user = await userManager.signinRedirectCallback(url);
+				},
+			});
+			await userManager.signinRedirect();
+			await auth;
+			await userManager.storeUser(user);
+			return user;
+		},
+		signOut: async () => {
+			await userManager.removeUser();
+		},
 	};
 }
