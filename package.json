@@ -10,6 +10,7 @@
 		"lint": "biome lint",
 		"format": "biome format",
 		"check": "biome check",
+		"typecheck": "tsc --noEmit",
 		"test": "bun test",
 		"cli": "bun run ./src/bin/cli.ts"
 	},
