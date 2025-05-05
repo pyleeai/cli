@@ -25,7 +25,7 @@ builds:
     flags:
       - --compile
       - --env
-      - inline
+      - "PYLEE_*"
 
 archives:
   - formats: [tar.gz]
