@@ -5,10 +5,12 @@ import type { StricliAutoCompleteContext } from "@stricli/auto-complete";
 import type { CommandContext } from "@stricli/core";
 import type { IdTokenClaims, User as OidcUser } from "oidc-client-ts";
 
-export interface Environment {
-	AUTHORITY: string;
-	CLIENT_ID: string;
-	REDIRECT_URI: string;
+declare module "bun" {
+	interface Env {
+		AUTHORITY: string;
+		CLIENT_ID: string;
+		REDIRECT_URI: string;
+	}
 }
 
 export interface User extends Omit<OidcUser, "profile"> {
