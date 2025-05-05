@@ -13,7 +13,8 @@
 		"check": "biome check",
 		"typecheck": "tsc --noEmit",
 		"test": "bun test",
-		"cli": "bun run ./src/bin/cli.ts"
+		"cli": "bun run ./src/bin/cli.ts",
+		"build": "bun run ./build.ts"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"

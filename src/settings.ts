@@ -1,13 +1,12 @@
-import { getEnv } from "./env";
+import { AUTHORITY, CLIENT_ID, REDIRECT_URI } from "./env";
 import { UserStore } from "./store";
 
-const env = getEnv();
 const userStore = new UserStore();
 
 export const settings = {
-	authority: env.AUTHORITY,
-	client_id: env.CLIENT_ID,
-	redirect_uri: env.REDIRECT_URI,
+	authority: AUTHORITY,
+	client_id: CLIENT_ID,
+	redirect_uri: REDIRECT_URI,
 	response_type: "code",
 	scope: "openid profile email public_metadata private_metadata",
 	loadUserInfo: true,

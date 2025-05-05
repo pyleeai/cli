@@ -13,6 +13,9 @@ describe("settings", () => {
 		for (const [key, value] of Object.entries(mockEnv)) {
 			process.env[key] = value;
 		}
+
+		delete require.cache[require.resolve("../src/env")];
+		delete require.cache[require.resolve("../src/settings")];
 	});
 
 	afterEach(() => {
