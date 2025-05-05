@@ -1,5 +1,5 @@
 import { serve } from "bun";
-import { PORT } from "./env";
+import { PYLEE_OIDC_PORT } from "./env";
 import errorHTML from "./html/error.html" with { type: "text" };
 import successHTML from "./html/success.html" with { type: "text" };
 
@@ -11,9 +11,10 @@ export function authServer({
 	signinRedirectCallback,
 }: AuthServerOptions): Promise<Request> {
 	return new Promise<Request>((resolve, reject) => {
+		const port = PYLEE_OIDC_PORT;
 		const headers = { "Content-Type": "text/html" };
 		const server = serve({
-			port: PORT,
+			port,
 			async fetch(request) {
 				try {
 					await signinRedirectCallback(request.url);

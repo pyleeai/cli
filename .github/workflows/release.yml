@@ -32,7 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
           # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
-          AUTHORITY: ${{ secrets.AUTHORITY }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          REDIRECT_URI: ${{ vars.REDIRECT_URI }}
-          PORT: ${{ vars.PORT }}
+          PYLEE_OIDC_AUTHORITY: ${{ secrets.PYLEE_OIDC_AUTHORITY }}
+          PYLEE_OIDC_CLIENT_ID: ${{ secrets.PYLEE_OIDC_CLIENT_ID }}
+          PYLEE_OIDC_REDIRECT_URI: ${{ vars.PYLEE_OIDC_REDIRECT_URI }}
+          PYLEE_OIDC_PORT: ${{ vars.PYLEE_OIDC_PORT }}

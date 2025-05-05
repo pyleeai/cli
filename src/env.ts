@@ -1,4 +1,4 @@
-export const AUTHORITY = process.env.AUTHORITY;
-export const CLIENT_ID = process.env.CLIENT_ID;
-export const REDIRECT_URI = process.env.REDIRECT_URI;
-export const PORT = process.env.PORT;
+export const PYLEE_OIDC_AUTHORITY = process.env.PYLEE_OIDC_AUTHORITY;
+export const PYLEE_OIDC_CLIENT_ID = process.env.PYLEE_OIDC_CLIENT_ID;
+export const PYLEE_OIDC_REDIRECT_URI = process.env.PYLEE_OIDC_REDIRECT_URI;
+export const PYLEE_OIDC_PORT = process.env.PYLEE_OIDC_PORT;

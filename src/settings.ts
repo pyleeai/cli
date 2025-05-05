@@ -1,12 +1,19 @@
-import { AUTHORITY, CLIENT_ID, REDIRECT_URI } from "./env";
+import {
+	PYLEE_OIDC_AUTHORITY,
+	PYLEE_OIDC_CLIENT_ID,
+	PYLEE_OIDC_REDIRECT_URI,
+} from "./env";
 import { UserStore } from "./store";
 
 const userStore = new UserStore();
+const authority = PYLEE_OIDC_AUTHORITY;
+const client_id = PYLEE_OIDC_CLIENT_ID;
+const redirect_uri = PYLEE_OIDC_REDIRECT_URI;
 
 export const settings = {
-	authority: AUTHORITY,
-	client_id: CLIENT_ID,
-	redirect_uri: REDIRECT_URI,
+	authority,
+	client_id,
+	redirect_uri,
 	response_type: "code",
 	scope: "openid profile email public_metadata private_metadata",
 	loadUserInfo: true,
