@@ -4,6 +4,10 @@ import * as os from "node:os";
 import * as path from "node:path";
 import type { LocalContext, User } from "../../src/types";
 
+type DeepPartial<T> = T extends object
+	? { [P in keyof T]?: DeepPartial<T[P]> }
+	: T;
+
 export interface TestContext extends LocalContext {
 	readonly stdout: string;
 	readonly stderr: string;
@@ -12,7 +16,7 @@ export interface TestContext extends LocalContext {
 }
 
 export interface TestContextOptions {
-	user?: User | null;
+	user?: DeepPartial<User> | null;
 	readonly env?: Record<string, string>;
 }
 
@@ -48,8 +52,8 @@ export function buildContextForTest(
 		fs,
 		path,
 		process,
-		user: mock(async () => user),
-		signIn: mock(async () => user),
+		user: mock(async () => user as unknown as User | null),
+		signIn: mock(async () => user as unknown as User | null),
 		signOut: mock(async () => void 0),
 		get stdout() {
 			return stdout;
