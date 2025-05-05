@@ -2,7 +2,7 @@ name: test
 
 on:
   push:
-    
+
 jobs:
   test:
     name: test
@@ -16,3 +16,8 @@ jobs:
         run: bun install
       - name: Run tests
         run: bun test
+        env:
+          AUTHORITY: ${{ secrets.AUTHORITY }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          REDIRECT_URI: ${{ env.REDIRECT_URI }}
+          PORT: ${{ env.PORT }}
