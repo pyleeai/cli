@@ -15,6 +15,7 @@ describe("settings", () => {
 		}
 
 		delete require.cache[require.resolve("../src/env")];
+		delete require.cache[require.resolve("../src/settings")];
 	});
 
 	afterEach(() => {
