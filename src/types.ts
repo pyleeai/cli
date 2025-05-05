@@ -7,9 +7,10 @@ import type { IdTokenClaims, User as OidcUser } from "oidc-client-ts";
 
 declare module "bun" {
 	interface Env {
-		AUTHORITY: string;
-		CLIENT_ID: string;
-		REDIRECT_URI: string;
+		PYLEE_OIDC_AUTHORITY: string;
+		PYLEE_OIDC_CLIENT_ID: string;
+		PYLEE_OIDC_REDIRECT_URI: string;
+		PYLEE_OIDC_PORT: string;
 	}
 }
 
