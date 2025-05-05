@@ -1,4 +1,5 @@
 import { serve } from "bun";
+import { PORT } from "./env";
 import errorHTML from "./html/error.html" with { type: "text" };
 import successHTML from "./html/success.html" with { type: "text" };
 
@@ -12,6 +13,7 @@ export function authServer({
 	return new Promise<Request>((resolve, reject) => {
 		const headers = { "Content-Type": "text/html" };
 		const server = serve({
+			port: PORT,
 			async fetch(request) {
 				try {
 					await signinRedirectCallback(request.url);
