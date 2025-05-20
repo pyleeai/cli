@@ -4,7 +4,7 @@
     "jsr:@std/assert@1": "1.0.11",
     "jsr:@std/internal@^1.0.5": "1.0.7",
     "npm:@biomejs/biome@1.9.4": "1.9.4",
-    "npm:@pyleeai/mcp-proxy-server@0.7.0": "0.7.0_typescript@5.8.3",
+    "npm:@pyleeai/mcp-proxy-server@0.9.0": "0.9.0_typescript@5.8.3",
     "npm:@stricli/auto-complete@1.1.2": "1.1.2",
     "npm:@stricli/auto-complete@^1.1.2": "1.1.2",
     "npm:@stricli/core@1.1.2": "1.1.2",
@@ -102,8 +102,8 @@
         "zod-to-json-schema"
       ]
     },
-    "@pyleeai/mcp-proxy-server@0.7.0_typescript@5.8.3": {
-      "integrity": "sha512-DosJUS05ZxG5tmXx1Ak7cDYwcl9wVarIK25+HZPfyxjSlTUITEQYohqkdEO9z1S6CpP828ZFrsXlvQ4bE2nPKg==",
+    "@pyleeai/mcp-proxy-server@0.9.0_typescript@5.8.3": {
+      "integrity": "sha512-AVCxP51gTNxzE61enmw2+bSm8bEGKfyW6jbvSAXBw41XoyiXaOQTFyvbo9pyZWRV1Y0ZWgmagmndpmDo4RyGuw==",
       "dependencies": [
         "@modelcontextprotocol/sdk",
         "typescript",
@@ -749,7 +749,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/assert@1",
-      "npm:@pyleeai/mcp-proxy-server@0.7.0",
+      "npm:@pyleeai/mcp-proxy-server@0.9.0",
       "npm:@stricli/auto-complete@1.1.2",
       "npm:@stricli/core@1.1.2",
       "npm:conf@13.1.0",
@@ -759,7 +759,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@biomejs/biome@1.9.4",
-        "npm:@pyleeai/mcp-proxy-server@0.7.0",
+        "npm:@pyleeai/mcp-proxy-server@0.9.0",
         "npm:@stricli/auto-complete@^1.1.2",
         "npm:@stricli/core@^1.1.2",
         "npm:@types/bun@latest",
