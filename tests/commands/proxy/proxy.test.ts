@@ -21,7 +21,7 @@ describe("proxy", () => {
 	test("starts proxy with configured URL when user has configuration and token", async () => {
 		// Arrange
 		const user = {
-			access_token: "test-token-123",
+			id_token: "test-token-123",
 			profile: {
 				private_metadata: {
 					configurationUrl: "https://example.com/config",
@@ -44,7 +44,7 @@ describe("proxy", () => {
 	test("calls proxy with undefined config URL when user has no configurationUrl", async () => {
 		// Arrange
 		const user = {
-			access_token: "test-token-456",
+			id_token: "test-token-456",
 			profile: {
 				private_metadata: {},
 			},
@@ -65,7 +65,7 @@ describe("proxy", () => {
 	test("calls proxy with undefined config URL and token when user has no profile", async () => {
 		// Arrange
 		const user = {
-			access_token: "test-token-789",
+			id_token: "test-token-789",
 		} as unknown as User;
 		const context = buildContextForTest({ user });
 
