@@ -7,13 +7,11 @@ import { authServer } from "./server";
 import { settings } from "./settings";
 import type { LocalContext, User } from "./types";
 
-export async function buildContext(
-	process: NodeJS.Process,
-): Promise<LocalContext> {
+export function buildContext(process: NodeJS.Process): Promise<LocalContext> {
 	const navigator = new Navigator();
 	const userManager = new UserManager(settings, navigator);
 
-	return {
+	return Promise.resolve({
 		os,
 		fs,
 		path,
@@ -23,20 +21,32 @@ export async function buildContext(
 			await userManager.storeUser(user);
 			return user;
 		},
-		signIn: async () => {
+		signIn: async (): Promise<User | null> => {
 			let user: User | null = null;
+			const abortController = new AbortController();
 			const auth = authServer({
-				signinRedirectCallback: async (url) => {
+				signal: abortController.signal,
+				signinRedirectCallback: async (url: string) => {
 					user = await userManager.signinRedirectCallback(url);
 				},
 			});
-			await userManager.signinRedirect();
-			await auth;
-			await userManager.storeUser(user);
-			return user;
+
+			try {
+				await userManager.signinRedirect();
+				await auth;
+				await userManager.storeUser(user);
+				return user;
+			} catch {
+				await userManager.storeUser(null);
+				return null;
+			} finally {
+				await new Promise((resolve) => setTimeout(resolve, 0));
+
+				abortController.abort();
+			}
 		},
 		signOut: async () => {
 			await userManager.removeUser();
 		},
-	};
+	});
 }
