@@ -9,24 +9,53 @@
 version: 2
 
 builds:
-  - builder: bun
-    binary: pylee
+  - builder: deno
     targets:
-      - linux-x64-modern
-      - linux-arm64
-      - darwin-x64
-      - darwin-arm64
-      - windows-x64-modern
+      - x86_64-pc-windows-msvc
+      - x86_64-apple-darwin
+      - aarch64-apple-darwin
+      - x86_64-unknown-linux-gnu
+      - aarch64-unknown-linux-gnu
 
+    # Binary name.
+    # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
+    #
+    # Default: Project directory name.
+    binary: pylee
+    
+    # Main entry point.
+    #
+    # Default: 'main.ts'.
+    main: "src/bin/cli.ts"
+  
     # Custom flags.
     #
     # Templates: allowed.
-    # Default: ["--compile"].
+    # Default: [].
     flags:
-      - --compile
-      - --env
-      - "PYLEE_*"
-
+      - --allow-env
+      - --allow-net
+      - --allow-run
+      - --allow-sys
+      - --allow-read
+      - --allow-write
+      - --node-modules-dir
+      - --unstable-sloppy-imports
+      - --include
+      - package.json
+      - --include
+      - src/html
+      
+    # Hooks can be used to customize the final binary,
+    # for example, to run generators.
+    #
+    # Templates: allowed.
+    hooks:
+      pre:
+        - ./scripts/replace-env-vars.sh
+      post:
+        - ./scripts/restore-env-file.sh
+      
 archives:
   - formats: [tar.gz]
     # this name template makes the OS and Arch compatible with the results of `uname`.
@@ -47,6 +76,8 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+
 
 release:
   footer: >-
