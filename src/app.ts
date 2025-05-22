@@ -3,11 +3,12 @@ import {
 	buildUninstallCommand,
 } from "@stricli/auto-complete";
 import { buildApplication, buildRouteMap } from "@stricli/core";
-import { description, version } from "../package.json";
-import { projectName } from "../package.json" assert { type: "json" };
+import pkg from "../package.json" with { type: "json" };
 import { authRoutes } from "./commands/auth/commands";
 import { proxyCommand } from "./commands/proxy/command";
 import { setupCommand } from "./commands/setup/command";
+
+const { projectName, description, version } = pkg;
 
 const routes = buildRouteMap({
 	routes: {

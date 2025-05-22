@@ -1,6 +1,8 @@
 import Conf from "conf";
 import type { AsyncStorage } from "oidc-client-ts";
-import { projectName } from "../package.json" assert { type: "json" };
+import pkg from "../package.json" with { type: "json" };
+
+const { projectName } = pkg;
 
 export class ConfAsyncStorage implements AsyncStorage {
 	private conf: Conf;
