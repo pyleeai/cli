@@ -5,4 +5,4 @@ goreleaser = "nightly"
 
 [env]
 mise.file = ".env.development" 
-#mise.file = ".env.production" 
+# mise.file = ".env.production" 
