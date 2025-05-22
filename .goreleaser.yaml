@@ -3,7 +3,7 @@
 
 # The lines below are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/need to use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
 
 version: 2
@@ -56,6 +56,12 @@ builds:
       post:
         - ./scripts/restore-env-file.sh
       
+npms:
+  # Package name.
+  #
+  # Required
+  - name: "@pyleeai/pylee"
+
 archives:
   - formats: [tar.gz]
     # this name template makes the OS and Arch compatible with the results of `uname`.

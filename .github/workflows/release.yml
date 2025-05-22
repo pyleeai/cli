@@ -24,14 +24,15 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
-          distribution: goreleaser
+          distribution: goreleaser-pro
           # 'latest', 'nightly', or a semver
           version: nightly
           args: release --clean
         env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
-          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
           PYLEE_OIDC_AUTHORITY: ${{ secrets.PYLEE_OIDC_AUTHORITY }}
           PYLEE_OIDC_CLIENT_ID: ${{ secrets.PYLEE_OIDC_CLIENT_ID }}
           PYLEE_OIDC_REDIRECT_URI: ${{ vars.PYLEE_OIDC_REDIRECT_URI }}
