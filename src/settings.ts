@@ -18,4 +18,9 @@ export const settings = {
 	scope: "openid profile email public_metadata private_metadata",
 	loadUserInfo: true,
 	userStore,
+	automaticSilentRenew: true,
+	silentRequestTimeoutInSeconds: 10,
+	includeIdTokenInSilentRenew: true,
+	accessTokenExpiringNotificationTimeInSeconds: 300,
+	checkSessionIntervalInSeconds: 300,
 };
