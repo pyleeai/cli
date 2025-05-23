@@ -3,7 +3,7 @@ import type os from "node:os";
 import type path from "node:path";
 import type { StricliAutoCompleteContext } from "@stricli/auto-complete";
 import type { CommandContext } from "@stricli/core";
-import type { IdTokenClaims, User as OidcUser } from "oidc-client-ts";
+import type { IdTokenClaims, User as OidcUser, UserManager } from "oidc-client-ts";
 
 declare global {
 	namespace NodeJS {
@@ -49,6 +49,7 @@ export interface LocalContext
 	readonly os: typeof os;
 	readonly fs: typeof fs;
 	readonly path: typeof path;
+	readonly userManager: UserManager;
 	user: () => Promise<User | null>;
 	signIn: () => Promise<User | null>;
 	signOut: () => Promise<void>;
