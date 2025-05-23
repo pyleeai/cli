@@ -75,6 +75,26 @@ The CLI uses OpenID Connect (OIDC) with Clerk as the identity provider for secur
 
 3. **Automatic Refresh**: The CLI automatically handles token refresh when needed.
 
+### Long-Running Processes
+
+The proxy command runs indefinitely and handles token expiration automatically using event-driven monitoring:
+
+- **Event-Driven Monitoring**: The CLI listens for token expiration events from the authentication library
+- **Zero-Downtime Restart**: When tokens expire or are refreshed, the proxy restarts without service interruption
+- **Real-Time Feedback**: Provides immediate feedback about token status and refresh operations
+
+Token management approach:
+- **Event Handlers**: Respond to real-time token lifecycle events from oidc-client-ts
+- **Automatic Refresh**: Tokens are refreshed automatically when expiration events are triggered
+- **Graceful Restart**: Keeps old proxy running until new one with fresh tokens is ready
+
+According to Clerk's OIDC implementation:
+- Access tokens expire after 2 hours
+- ID tokens expire after 1 hour  
+- Refresh tokens expire after 3 days
+
+The proxy uses the authentication library's event system for reliable token management in CLI environments. If you don't use the CLI for more than 3 days, you'll need to sign in again.
+
 ### Troubleshooting
 
 **"Authentication required" message**: The CLI will automatically open the sign-in flow.
