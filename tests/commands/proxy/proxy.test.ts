@@ -96,7 +96,7 @@ describe("proxy", () => {
 		});
 	});
 
-	test("calls proxy with undefined config URL and token when user is null (unauthenticated)", async () => {
+	test("exits with failure when user is null and signIn fails", async () => {
 		// Arrange
 		const context = buildContextForTest({ user: null });
 
@@ -105,9 +105,9 @@ describe("proxy", () => {
 
 		// Assert
 		expect(context.user).toHaveBeenCalled();
-		expect(mockProxyServer).toHaveBeenCalledTimes(1);
-		expect(mockProxyServer).toHaveBeenCalledWith(undefined, {
-			headers: { Authorization: "Bearer undefined" },
-		});
+		expect(context.signIn).toHaveBeenCalled();
+		expect(context.exitCode).toBe(2); // FAILURE
+		expect(mockProxyServer).not.toHaveBeenCalled();
+		expect(context.stderr).toContain("Sign in failed!");
 	});
 });
