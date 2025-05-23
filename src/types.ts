@@ -5,6 +5,18 @@ import type { StricliAutoCompleteContext } from "@stricli/auto-complete";
 import type { CommandContext } from "@stricli/core";
 import type { IdTokenClaims, User as OidcUser } from "oidc-client-ts";
 
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      [key: string]: string | undefined;
+      PYLEE_OIDC_AUTHORITY: string
+      PYLEE_OIDC_CLIENT_ID: string
+      PYLEE_OIDC_REDIRECT_URI: string 
+      PYLEE_OIDC_PORT: string
+    }
+  }
+}
+
 export interface User extends Omit<OidcUser, "profile"> {
 	profile: IdTokenClaims & {
 		aud?: string | string[];
