@@ -8,11 +8,12 @@ The Pylee CLI provides a convenient way to use Pylee AI services directly from y
 
 ## Requirements
 
-- [Deno](https://deno.com/manual/getting_started/installation) 2.0 or later
+- [Bun](https://bun.sh/docs/installation) 1.0 or later
+- [Deno](https://deno.com/manual/getting_started/installation) 2.0 or later (optional, for Deno-specific builds)
 
 ## Building from Source
 
-The CLI is built using Deno, which provides a self-contained binary without external dependencies.
+The CLI is built using Bun, which provides fast builds and dependency management.
 
 ### Build Steps
 
@@ -23,85 +24,103 @@ git clone https://github.com/pyleeai/cli.git
 cd cli
 ```
 
-2. Run the build script:
+2. Install dependencies and build:
 
 ```bash
-chmod +x build.sh
-./build.sh
+bun install
+bun run build
 ```
 
 This will:
-- Cache all npm dependencies
-- Include configuration from config.json
-- Include HTML files and package metadata as embedded resources
-- Compile the CLI into a single binary
+- Install all npm dependencies
+- Bundle the application
+- Create the build output
 
-The compiled binary will be available at `dist/pylee`.
+The compiled output will be available in the `build/` directory.
 
 ### Configuration
 
-The CLI uses a configuration file (`config.json`) with the following parameters:
+The CLI uses environment variables for configuration. You can set these in `.env` files or as environment variables:
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `PYLEE_OIDC_AUTHORITY` | OIDC authority URL | https://auth.pylee.ai |
-| `PYLEE_OIDC_CLIENT_ID` | OIDC client ID | pylee-cli |
-| `PYLEE_OIDC_REDIRECT_URI` | OIDC redirect URI | http://localhost:3000/callback |
-| `PYLEE_OIDC_PORT` | Local port for OIDC callbacks | 3000 |
-| `MCP_PROXY_CONFIG_URL` | MCP proxy configuration URL | https://api.pylee.ai/v1/proxy/config |
-| `MCP_PROXY_URL` | MCP proxy URL | https://proxy.pylee.ai |
-| `MCP_PROXY_API_KEY` | MCP proxy API key | pylee-cli-proxy-key |
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `PYLEE_OIDC_AUTHORITY` | OIDC authority URL | Yes |
+| `PYLEE_OIDC_CLIENT_ID` | OIDC client ID | Yes |
+| `PYLEE_OIDC_REDIRECT_URI` | OIDC redirect URI | Yes |
+| `PYLEE_OIDC_PORT` | Local port for OIDC callbacks | Yes |
 
-These configuration values can be set in two ways:
+Configuration can be set in several ways:
 
-1. **Edit config.json directly** - This is best for development and permanent changes.
+1. **Environment files** - Create `.env.local` or modify existing `.env.*` files
+2. **Environment variables at runtime** - Export variables in your shell
+3. **Development vs Production** - Use `.env.development` or `.env.production` files
 
-2. **Use the update_config.sh script** - This updates config.json based on environment variables.
-   ```bash
-   # Set environment variables
-   export PYLEE_OIDC_AUTHORITY=https://custom-auth.example.com
-   export MCP_PROXY_URL=https://custom-proxy.example.com
-   
-   # Update config.json from environment variables
-   ./update_config.sh
-   
-   # Build the CLI with updated configuration
-   ./build.sh
-   ```
+Example `.env.local`:
+```bash
+PYLEE_OIDC_AUTHORITY=https://your-auth-domain.clerk.accounts.dev
+PYLEE_OIDC_CLIENT_ID=your-client-id
+PYLEE_OIDC_REDIRECT_URI=http://localhost:3000/callback
+PYLEE_OIDC_PORT=3000
+```
 
-3. **Set environment variables at runtime** - The CLI will also check for environment variables at runtime, which take precedence over values in config.json.
+## Authentication
+
+The CLI uses OpenID Connect (OIDC) with Clerk as the identity provider for secure authentication.
+
+### How Authentication Works
+
+1. **Initial Sign-in**: When you first run a command that requires authentication, the CLI will automatically open a sign-in flow in your default browser.
+
+2. **Token Storage**: Authentication tokens are securely stored locally and automatically managed by the CLI.
+
+3. **Automatic Refresh**: The CLI automatically handles token refresh when needed.
+
+### Troubleshooting
+
+**"Authentication required" message**: The CLI will automatically open the sign-in flow.
+
+**"Authentication failed" message**: 
+- Check your internet connection
+- Verify your Clerk account is active
+- Try clearing stored credentials: `./dist/pylee auth signout`
+
+**"No configuration URL found"**: Your account may not be properly configured for proxy access. Contact support.
 
 ## Usage
 
 ```bash
-# Show help
-./dist/pylee --help
+# Development - run directly with Bun
+bun run cli --help
+
+# Or use Deno
+deno task dev --help
 
 # Check authentication status
-./dist/pylee auth status
+bun run cli auth status
 
 # Sign in
-./dist/pylee auth signin
+bun run cli auth signin
 
 # Sign out
-./dist/pylee auth signout
+bun run cli auth signout
 
 # Run the MCP proxy server (default command)
-./dist/pylee
+bun run cli
 # or
-./dist/pylee proxy
+bun run cli proxy
 ```
 
 ## Installation
 
-After building, you can move the binary to a directory in your PATH:
+For development, you can create aliases or scripts to run the CLI:
 
 ```bash
-# macOS/Linux
-sudo cp dist/pylee /usr/local/bin/pylee
+# Create an alias (add to your shell profile)
+alias pylee="bun run --cwd /path/to/cli cli"
 
-# Windows
-# Add the binary location to your PATH
+# Or create a wrapper script
+echo '#!/bin/bash\nbun run --cwd /path/to/cli cli "$@"' > /usr/local/bin/pylee
+chmod +x /usr/local/bin/pylee
 ```
 
 ## License
