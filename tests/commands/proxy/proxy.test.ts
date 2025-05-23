@@ -110,4 +110,27 @@ describe("proxy", () => {
 		expect(mockProxyServer).not.toHaveBeenCalled();
 		expect(context.stderr).toContain("Sign in failed!");
 	});
+
+	test("sets up UserManager event handlers for token management", async () => {
+		// Arrange
+		const user = {
+			id_token: "test-token-123",
+			profile: {
+				private_metadata: {
+					configurationUrl: "https://example.com/config",
+				},
+			},
+		} as unknown as User;
+		const context = buildContextForTest({ user });
+
+		// Act
+		await proxy.call(context);
+
+		// Assert
+		expect(context.userManager.events.addAccessTokenExpiring).toHaveBeenCalled();
+		expect(context.userManager.events.addAccessTokenExpired).toHaveBeenCalled();
+		expect(context.userManager.events.addSilentRenewError).toHaveBeenCalled();
+		expect(context.userManager.events.addUserLoaded).toHaveBeenCalled();
+		expect(mockProxyServer).toHaveBeenCalledTimes(1);
+	});
 });
