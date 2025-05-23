@@ -30,11 +30,11 @@ export interface User extends Omit<OidcUser, "profile"> {
 		name?: string;
 		picture?: string;
 		preferred_username?: string;
-		private_metadata?: Record<string, unknown>;
-		public_metadata?: Record<string, unknown>;
+		private_metadata?: Record<string, string>;
+		public_metadata?: Record<string, string>;
 		rat?: number;
 		sub?: string;
-		unsafe_metadata?: Record<string, unknown>;
+		unsafe_metadata?: Record<string, string>;
 		object?: string;
 		instance_id?: string;
 		user_id?: string;
