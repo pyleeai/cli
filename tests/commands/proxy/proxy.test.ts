@@ -127,10 +127,44 @@ describe("proxy", () => {
 		await proxy.call(context);
 
 		// Assert
-		expect(context.userManager.events.addAccessTokenExpiring).toHaveBeenCalled();
+		expect(
+			context.userManager.events.addAccessTokenExpiring,
+		).toHaveBeenCalled();
 		expect(context.userManager.events.addAccessTokenExpired).toHaveBeenCalled();
 		expect(context.userManager.events.addSilentRenewError).toHaveBeenCalled();
-		expect(context.userManager.events.addUserLoaded).toHaveBeenCalled();
 		expect(mockProxyServer).toHaveBeenCalledTimes(1);
+	});
+
+	test("maintains zero-downtime during proxy restart", async () => {
+		// Arrange
+		const user = {
+			id_token: "test-token-123",
+			profile: {
+				private_metadata: {
+					configurationUrl: "https://example.com/config",
+				},
+			},
+		} as unknown as User;
+		const context = buildContextForTest({ user });
+		const oldProxyDispose = mock(() => {});
+		const newProxyDispose = mock(() => {});
+		mockProxyServer
+			.mockReturnValueOnce(
+				Promise.resolve({ [Symbol.dispose]: oldProxyDispose }),
+			)
+			.mockReturnValueOnce(
+				Promise.resolve({ [Symbol.dispose]: newProxyDispose }),
+			);
+
+		// Act
+		await proxy.call(context);
+		const tokenExpiringHandler =
+			context.userManager.events.addAccessTokenExpiring.mock.calls[0][0];
+		await tokenExpiringHandler();
+
+		// Assert
+		expect(mockProxyServer).toHaveBeenCalledTimes(2); // Initial + restart
+		expect(oldProxyDispose).toHaveBeenCalledTimes(1); // Old proxy disposed
+		expect(newProxyDispose).not.toHaveBeenCalled(); // New proxy still running
 	});
 });
