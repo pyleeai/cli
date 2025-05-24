@@ -204,7 +204,7 @@ describe("proxy", () => {
 		expect(context.stderr).toContain("Sign in errored!");
 	});
 
-	test("handles MCPProxyServer initialization failure", async () => {
+	test("handles MCPProxyServer initialization failure with silent retry", async () => {
 		// Arrange
 		const user = {
 			id_token: "test-token-123",
@@ -225,7 +225,6 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(mockProxyServer).toHaveBeenCalledTimes(2);
-		expect(context.stderr).toContain("Proxy failed after retry!");
 	});
 
 	test("handles MCPProxyServer failure with existing proxy running", async () => {
@@ -241,7 +240,7 @@ describe("proxy", () => {
 		const context = buildContextForTest({ user });
 		const existingProxyDispose = mock(() => {});
 
-		// First call succeeds, second call fails, third call also fails
+		// First call succeeds, second call fails, retry also fails - existing proxy continues running
 		mockProxyServer
 			.mockReturnValueOnce(
 				Promise.resolve({ [Symbol.dispose]: existingProxyDispose }),
@@ -259,8 +258,6 @@ describe("proxy", () => {
 
 		// Assert
 		expect(mockProxyServer).toHaveBeenCalledTimes(3);
-		expect(context.stderr).toContain("Proxy failed after retry!");
-		expect(context.stderr).toContain("Keeping existing proxy running.");
 	});
 
 	test("sets up signal handlers when process.on is available", async () => {
@@ -421,6 +418,13 @@ describe("proxy", () => {
 		mockProxyServer.mockRejectedValueOnce(new Error("Proxy server failed"));
 		context.signIn = mock(() => Promise.resolve(null));
 
+		// Mock user() to return null after signOut is called
+		let userSignedOut = false;
+		context.user = mock(async () => (userSignedOut ? null : user));
+		context.signOut = mock(async () => {
+			userSignedOut = true;
+		});
+
 		// Act
 		await proxy.call(context);
 
@@ -428,7 +432,6 @@ describe("proxy", () => {
 		expect(context.user).toHaveBeenCalled();
 		expect(context.signOut).toHaveBeenCalled();
 		expect(context.signIn).toHaveBeenCalled();
-		expect(context.stderr).toContain("Proxy failed, retrying with fresh authentication...");
 		expect(context.stderr).toContain("Sign in failed!");
 		expect(mockProxyServer).toHaveBeenCalledTimes(1);
 	});
@@ -446,6 +449,13 @@ describe("proxy", () => {
 		const context = buildContextForTest({ user });
 		const existingProxyDispose = mock(() => {});
 		const retryProxyDispose = mock(() => {});
+
+		// Mock user() to return null after signOut is called
+		let userSignedOut = false;
+		context.user = mock(async () => (userSignedOut ? null : user));
+		context.signOut = mock(async () => {
+			userSignedOut = true;
+		});
 
 		// First call succeeds (creates existing proxy), second call fails, retry succeeds
 		mockProxyServer
@@ -470,7 +480,6 @@ describe("proxy", () => {
 		// Assert
 		expect(context.signOut).toHaveBeenCalled();
 		expect(context.signIn).toHaveBeenCalled();
-		expect(context.stderr).toContain("Proxy failed, retrying with fresh authentication...");
 		expect(mockProxyServer).toHaveBeenCalledTimes(3);
 		expect(existingProxyDispose).toHaveBeenCalledTimes(1);
 	});
@@ -487,7 +496,7 @@ describe("proxy", () => {
 		} as unknown as User;
 		const context = buildContextForTest({ user });
 
-		// Both MCPProxyServer calls fail (initial and retry)
+		// Both MCPProxyServer calls fail (initial and retry) - silently continues
 		mockProxyServer
 			.mockRejectedValueOnce(new Error("Proxy server failed"))
 			.mockRejectedValueOnce(new Error("Retry also failed"));
@@ -496,13 +505,10 @@ describe("proxy", () => {
 		await proxy.call(context);
 
 		// Assert
-		expect(context.stderr).toContain("Proxy failed, retrying with fresh authentication...");
-		expect(context.stderr).toContain("Proxy failed after retry!");
-		expect(context.stderr).not.toContain("Keeping existing proxy running.");
 		expect(mockProxyServer).toHaveBeenCalledTimes(2);
 	});
 
-	test("handles invalid token from different authority by forcing fresh authentication", async () => {
+	test("silently handles invalid token from different authority by forcing fresh authentication", async () => {
 		// Arrange
 		const oldUser = {
 			id_token: "old-authority-token-123",
@@ -523,15 +529,20 @@ describe("proxy", () => {
 		const context = buildContextForTest({ user: oldUser });
 		const newProxyDispose = mock(() => {});
 
-		// First MCPProxyServer call fails with 401-like error, retry succeeds with new token
+		// Mock user() to return null after signOut, then return newUser after signIn
+		let userSignedOut = false;
+		context.user = mock(async () => (userSignedOut ? null : oldUser));
+		context.signOut = mock(async () => {
+			userSignedOut = true;
+		});
+		context.signIn = mock(() => Promise.resolve(newUser));
+
+		// First MCPProxyServer call fails with auth error, retry succeeds with fresh token
 		mockProxyServer
 			.mockRejectedValueOnce(new Error("Unauthorized"))
 			.mockReturnValueOnce(
 				Promise.resolve({ [Symbol.dispose]: newProxyDispose }),
 			);
-
-		// Mock signIn to return new user with fresh token
-		context.signIn = mock(() => Promise.resolve(newUser));
 
 		// Act
 		await proxy.call(context);
@@ -540,19 +551,20 @@ describe("proxy", () => {
 		expect(context.user).toHaveBeenCalled();
 		expect(context.signOut).toHaveBeenCalled(); // Should sign out old user
 		expect(context.signIn).toHaveBeenCalled(); // Should sign in with new authority
-		expect(context.stderr).toContain("Proxy failed, retrying with fresh authentication...");
 		expect(mockProxyServer).toHaveBeenCalledTimes(2);
-		
+
 		// Verify first call used old token
-		expect(mockProxyServer).toHaveBeenNthCalledWith(1, 
+		expect(mockProxyServer).toHaveBeenNthCalledWith(
+			1,
 			"http://localhost:3002/active-registry",
-			{ headers: { Authorization: "Bearer old-authority-token-123" } }
+			{ headers: { Authorization: "Bearer old-authority-token-123" } },
 		);
-		
+
 		// Verify retry call used new token
-		expect(mockProxyServer).toHaveBeenNthCalledWith(2,
-			"http://localhost:3002/active-registry", 
-			{ headers: { Authorization: "Bearer new-authority-token-456" } }
+		expect(mockProxyServer).toHaveBeenNthCalledWith(
+			2,
+			"http://localhost:3002/active-registry",
+			{ headers: { Authorization: "Bearer new-authority-token-456" } },
 		);
 	});
 });

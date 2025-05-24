@@ -5,15 +5,11 @@ import { ExitCode, type LocalContext } from "../../types.ts";
 export default async function (this: LocalContext): Promise<void> {
 	let currentProxy: Disposable | null = null;
 
-	const auth = async (forceRefresh = false) => {
+	const auth = async () => {
 		let user = await this.user();
 
-		if (!user || forceRefresh) {
+		if (!user) {
 			try {
-				if (forceRefresh && user) {
-					await this.signOut();
-				}
-				
 				user = await this.signIn();
 
 				if (!user) {
@@ -31,42 +27,21 @@ export default async function (this: LocalContext): Promise<void> {
 		return user;
 	};
 
-	const proxy = async (isRetry = false) => {
-		try {
-			const user = await auth(isRetry);
+	const createProxy = async () => {
+		const user = await auth();
+		if (!user) return;
+		
+		const headers = { Authorization: `Bearer ${user.id_token}` };
+		const newProxy = await MCPProxyServer(PYLEE_CONFIGURATION_URL, { headers });
+		
+		if (currentProxy) dispose(currentProxy);
+		currentProxy = newProxy;
+	};
 
-			if (!user) return;
-
-			const idToken = user.id_token;
-			const headers = { Authorization: `Bearer ${idToken}` };
-			const configurationUrl = PYLEE_CONFIGURATION_URL;
-			const newProxy = await MCPProxyServer(configurationUrl, { headers });
-
-			if (currentProxy) {
-				dispose(currentProxy);
-			}
-
-			currentProxy = newProxy;
-		} catch (error) {
-			if (isRetry) {
-				this.process.stderr.write("Proxy failed after retry!\n");
-				if (currentProxy) {
-					this.process.stderr.write("Keeping existing proxy running.\n");
-				}
-				return;
-			}
-
-			this.process.stderr.write("Proxy failed, retrying with fresh authentication...\n");
-
-			try {
-				await proxy(true);
-			} catch {
-				this.process.stderr.write("Proxy retry failed!\n");
-				if (currentProxy) {
-					this.process.stderr.write("Keeping existing proxy running.\n");
-				}
-			}
-		}
+	const proxy = () => {
+		return createProxy().catch(() => 
+			this.signOut().then(createProxy).catch(() => {})
+		);
 	};
 
 	const dispose = (resource: Disposable) => {
