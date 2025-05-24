@@ -3,6 +3,12 @@ import proxy from "../../../src/commands/proxy/proxy";
 import type { User } from "../../../src/types";
 import { buildContextForTest } from "../../helpers/context.test";
 
+type MockFunction = {
+	mock: {
+		calls: unknown[][];
+	};
+};
+
 describe("proxy", () => {
 	const mockProxyServer = mock(() =>
 		Promise.resolve({ [Symbol.dispose]: mock(() => {}) }),
@@ -171,8 +177,9 @@ describe("proxy", () => {
 		// Act
 		await proxy.call(context);
 		const tokenExpiringHandler = (
-			context.userManager.events.addAccessTokenExpiring as any
-		).mock.calls[0][0];
+			context.userManager.events
+				.addAccessTokenExpiring as unknown as MockFunction
+		).mock.calls[0]?.[0] as () => void;
 		await tokenExpiringHandler();
 
 		// Assert
@@ -245,8 +252,9 @@ describe("proxy", () => {
 		// Act
 		await proxy.call(context);
 		const tokenExpiringHandler = (
-			context.userManager.events.addAccessTokenExpiring as any
-		).mock.calls[0][0];
+			context.userManager.events
+				.addAccessTokenExpiring as unknown as MockFunction
+		).mock.calls[0]?.[0] as () => void;
 		await tokenExpiringHandler();
 
 		// Assert
@@ -266,8 +274,8 @@ describe("proxy", () => {
 			},
 		} as unknown as User;
 		const context = buildContextForTest({ user });
-		const mockOn = mock(() => {}) as any;
-		context.process.on = mockOn;
+		const mockOn = mock(() => {}) as unknown as MockFunction;
+		(context.process as unknown as { on: MockFunction }).on = mockOn;
 
 		// Act
 		await proxy.call(context);
@@ -315,16 +323,16 @@ describe("proxy", () => {
 		mockProxyServer.mockReturnValue(
 			Promise.resolve({ [Symbol.dispose]: proxyDispose }),
 		);
-		const mockOn = mock(() => {}) as any;
-		context.process.on = mockOn;
+		const mockOn = mock(() => {}) as unknown as MockFunction;
+		(context.process as unknown as { on: MockFunction }).on = mockOn;
 
 		// Act
 		await proxy.call(context);
 
 		// Get the cleanup function and call it
-		const cleanupFunction = (mockOn as any).mock.calls.find(
-			(call: any[]) => call[0] === "SIGINT",
-		)?.[1];
+		const cleanupFunction = (mockOn as MockFunction).mock.calls.find(
+			(call: unknown[]) => call[0] === "SIGINT",
+		)?.[1] as (() => void) | undefined;
 		expect(cleanupFunction).toBeDefined();
 		cleanupFunction?.();
 
@@ -356,8 +364,9 @@ describe("proxy", () => {
 		// Act
 		await proxy.call(context);
 		const tokenExpiredHandler = (
-			context.userManager.events.addAccessTokenExpired as any
-		).mock.calls[0][0];
+			context.userManager.events
+				.addAccessTokenExpired as unknown as MockFunction
+		).mock.calls[0]?.[0] as () => void;
 		await tokenExpiredHandler();
 
 		// Assert
@@ -388,8 +397,8 @@ describe("proxy", () => {
 		// Act
 		await proxy.call(context);
 		const silentRenewErrorHandler = (
-			context.userManager.events.addSilentRenewError as any
-		).mock.calls[0][0];
+			context.userManager.events.addSilentRenewError as unknown as MockFunction
+		).mock.calls[0]?.[0] as () => void;
 		await silentRenewErrorHandler();
 
 		// Assert
@@ -453,8 +462,9 @@ describe("proxy", () => {
 
 		// Simulate token expiring which triggers retry logic
 		const tokenExpiringHandler = (
-			context.userManager.events.addAccessTokenExpiring as any
-		).mock.calls[0][0];
+			context.userManager.events
+				.addAccessTokenExpiring as unknown as MockFunction
+		).mock.calls[0]?.[0] as () => void;
 		await tokenExpiringHandler();
 
 		// Assert
