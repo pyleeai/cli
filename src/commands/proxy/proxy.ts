@@ -1,4 +1,5 @@
 import { MCPProxyServer } from "@pyleeai/mcp-proxy-server";
+import { PYLEE_CONFIGURATION_URL } from "../../env.ts";
 import { ExitCode, type LocalContext } from "../../types.ts";
 
 export default async function (this: LocalContext): Promise<void> {
@@ -36,7 +37,7 @@ export default async function (this: LocalContext): Promise<void> {
 
 			const idToken = user.id_token;
 			const headers = { Authorization: `Bearer ${idToken}` };
-			const configurationUrl = user.profile?.private_metadata?.configurationUrl;
+			const configurationUrl = PYLEE_CONFIGURATION_URL;
 			const newProxy = await MCPProxyServer(configurationUrl, { headers });
 
 			if (currentProxy) {
@@ -45,7 +46,7 @@ export default async function (this: LocalContext): Promise<void> {
 
 			currentProxy = newProxy;
 		} catch {
-			this.process.stderr.write(`Failed to initialize proxy\n`);
+			this.process.stderr.write("Failed to initialize proxy\n");
 			if (currentProxy) {
 				this.process.stderr.write("Keeping existing proxy running.\n");
 			}

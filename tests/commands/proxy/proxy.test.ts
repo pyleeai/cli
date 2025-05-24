@@ -36,12 +36,15 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(mockProxyServer).toHaveBeenCalledTimes(1);
-		expect(mockProxyServer).toHaveBeenCalledWith("https://example.com/config", {
-			headers: { Authorization: "Bearer test-token-123" },
-		});
+		expect(mockProxyServer).toHaveBeenCalledWith(
+			"http://localhost:3002/active-registry",
+			{
+				headers: { Authorization: "Bearer test-token-123" },
+			},
+		);
 	});
 
-	test("calls proxy with undefined config URL when user has no configurationUrl", async () => {
+	test("calls proxy with default config URL when user has no configurationUrl", async () => {
 		// Arrange
 		const user = {
 			id_token: "test-token-456",
@@ -57,12 +60,15 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(mockProxyServer).toHaveBeenCalledTimes(1);
-		expect(mockProxyServer).toHaveBeenCalledWith(undefined, {
-			headers: { Authorization: "Bearer test-token-456" },
-		});
+		expect(mockProxyServer).toHaveBeenCalledWith(
+			"http://localhost:3002/active-registry",
+			{
+				headers: { Authorization: "Bearer test-token-456" },
+			},
+		);
 	});
 
-	test("calls proxy with undefined config URL and token when user has no profile", async () => {
+	test("calls proxy with default config URL and token when user has no profile", async () => {
 		// Arrange
 		const user = {
 			id_token: "test-token-789",
@@ -75,12 +81,15 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(mockProxyServer).toHaveBeenCalledTimes(1);
-		expect(mockProxyServer).toHaveBeenCalledWith(undefined, {
-			headers: { Authorization: "Bearer test-token-789" },
-		});
+		expect(mockProxyServer).toHaveBeenCalledWith(
+			"http://localhost:3002/active-registry",
+			{
+				headers: { Authorization: "Bearer test-token-789" },
+			},
+		);
 	});
 
-	test("calls proxy with undefined config URL and token when user object is empty", async () => {
+	test("calls proxy with default config URL and token when user object is empty", async () => {
 		// Arrange
 		const user = {} as User;
 		const context = buildContextForTest({ user });
@@ -91,9 +100,12 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(mockProxyServer).toHaveBeenCalledTimes(1);
-		expect(mockProxyServer).toHaveBeenCalledWith(undefined, {
-			headers: { Authorization: "Bearer undefined" },
-		});
+		expect(mockProxyServer).toHaveBeenCalledWith(
+			"http://localhost:3002/active-registry",
+			{
+				headers: { Authorization: "Bearer undefined" },
+			},
+		);
 	});
 
 	test("exits with failure when user is null and signIn fails", async () => {
@@ -218,15 +230,18 @@ describe("proxy", () => {
 		} as unknown as User;
 		const context = buildContextForTest({ user });
 		const existingProxyDispose = mock(() => {});
-		
+
 		// First call succeeds, second call fails
 		mockProxyServer
-			.mockReturnValueOnce(Promise.resolve({ [Symbol.dispose]: existingProxyDispose }))
+			.mockReturnValueOnce(
+				Promise.resolve({ [Symbol.dispose]: existingProxyDispose }),
+			)
 			.mockRejectedValueOnce(new Error("Proxy server failed"));
 
 		// Act
 		await proxy.call(context);
-		const tokenExpiringHandler = context.userManager.events.addAccessTokenExpiring.mock.calls[0][0];
+		const tokenExpiringHandler =
+			context.userManager.events.addAccessTokenExpiring.mock.calls[0][0];
 		await tokenExpiringHandler();
 
 		// Assert
@@ -271,7 +286,7 @@ describe("proxy", () => {
 		} as unknown as User;
 		const context = buildContextForTest({ user });
 		// Remove process.on to simulate when it's not available
-		delete (context.process as any).on;
+		(context.process as unknown as { on?: unknown }).on = undefined;
 
 		// Act
 		await proxy.call(context);
@@ -292,15 +307,19 @@ describe("proxy", () => {
 		} as unknown as User;
 		const context = buildContextForTest({ user });
 		const proxyDispose = mock(() => {});
-		mockProxyServer.mockReturnValue(Promise.resolve({ [Symbol.dispose]: proxyDispose }));
+		mockProxyServer.mockReturnValue(
+			Promise.resolve({ [Symbol.dispose]: proxyDispose }),
+		);
 		const mockOn = mock(() => {});
 		context.process.on = mockOn;
 
 		// Act
 		await proxy.call(context);
-		
+
 		// Get the cleanup function and call it
-		const cleanupFunction = mockOn.mock.calls.find(call => call[0] === "SIGINT")?.[1];
+		const cleanupFunction = mockOn.mock.calls.find(
+			(call) => call[0] === "SIGINT",
+		)?.[1];
 		expect(cleanupFunction).toBeDefined();
 		cleanupFunction();
 
@@ -322,12 +341,17 @@ describe("proxy", () => {
 		const oldProxyDispose = mock(() => {});
 		const newProxyDispose = mock(() => {});
 		mockProxyServer
-			.mockReturnValueOnce(Promise.resolve({ [Symbol.dispose]: oldProxyDispose }))
-			.mockReturnValueOnce(Promise.resolve({ [Symbol.dispose]: newProxyDispose }));
+			.mockReturnValueOnce(
+				Promise.resolve({ [Symbol.dispose]: oldProxyDispose }),
+			)
+			.mockReturnValueOnce(
+				Promise.resolve({ [Symbol.dispose]: newProxyDispose }),
+			);
 
 		// Act
 		await proxy.call(context);
-		const tokenExpiredHandler = context.userManager.events.addAccessTokenExpired.mock.calls[0][0];
+		const tokenExpiredHandler =
+			context.userManager.events.addAccessTokenExpired.mock.calls[0][0];
 		await tokenExpiredHandler();
 
 		// Assert
@@ -348,12 +372,17 @@ describe("proxy", () => {
 		const oldProxyDispose = mock(() => {});
 		const newProxyDispose = mock(() => {});
 		mockProxyServer
-			.mockReturnValueOnce(Promise.resolve({ [Symbol.dispose]: oldProxyDispose }))
-			.mockReturnValueOnce(Promise.resolve({ [Symbol.dispose]: newProxyDispose }));
+			.mockReturnValueOnce(
+				Promise.resolve({ [Symbol.dispose]: oldProxyDispose }),
+			)
+			.mockReturnValueOnce(
+				Promise.resolve({ [Symbol.dispose]: newProxyDispose }),
+			);
 
 		// Act
 		await proxy.call(context);
-		const silentRenewErrorHandler = context.userManager.events.addSilentRenewError.mock.calls[0][0];
+		const silentRenewErrorHandler =
+			context.userManager.events.addSilentRenewError.mock.calls[0][0];
 		await silentRenewErrorHandler();
 
 		// Assert
