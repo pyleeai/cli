@@ -5,11 +5,15 @@ import { ExitCode, type LocalContext } from "../../types.ts";
 export default async function (this: LocalContext): Promise<void> {
 	let currentProxy: Disposable | null = null;
 
-	const auth = async () => {
+	const auth = async (forceRefresh = false) => {
 		let user = await this.user();
 
-		if (!user) {
+		if (!user || forceRefresh) {
 			try {
+				if (forceRefresh && user) {
+					await this.signOut();
+				}
+				
 				user = await this.signIn();
 
 				if (!user) {
@@ -27,9 +31,9 @@ export default async function (this: LocalContext): Promise<void> {
 		return user;
 	};
 
-	const proxy = async () => {
+	const proxy = async (isRetry = false) => {
 		try {
-			const user = await auth();
+			const user = await auth(isRetry);
 
 			if (!user) return;
 
@@ -44,28 +48,20 @@ export default async function (this: LocalContext): Promise<void> {
 
 			currentProxy = newProxy;
 		} catch (error) {
-			this.process.stderr.write("Proxy failed, retrying...\n");
+			if (isRetry) {
+				this.process.stderr.write("Proxy failed after retry!\n");
+				if (currentProxy) {
+					this.process.stderr.write("Keeping existing proxy running.\n");
+				}
+				return;
+			}
+
+			this.process.stderr.write("Proxy failed, retrying with fresh authentication...\n");
 
 			try {
-				await this.signOut();
-				const user = await this.signIn();
-
-				if (!user) {
-					this.process.stderr.write("Sign in failed!\n");
-					return;
-				}
-
-				const idToken = user.id_token;
-				const headers = { Authorization: `Bearer ${idToken}` };
-				const configurationUrl = PYLEE_CONFIGURATION_URL;
-				const newProxy = await MCPProxyServer(configurationUrl, { headers });
-
-				if (currentProxy) {
-					dispose(currentProxy);
-				}
-				currentProxy = newProxy;
+				await proxy(true);
 			} catch {
-				this.process.stderr.write("Proxy failed!\n");
+				this.process.stderr.write("Proxy retry failed!\n");
 				if (currentProxy) {
 					this.process.stderr.write("Keeping existing proxy running.\n");
 				}

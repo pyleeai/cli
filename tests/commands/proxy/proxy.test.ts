@@ -225,7 +225,7 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(mockProxyServer).toHaveBeenCalledTimes(2);
-		expect(context.stderr).toContain("Proxy failed!");
+		expect(context.stderr).toContain("Proxy failed after retry!");
 	});
 
 	test("handles MCPProxyServer failure with existing proxy running", async () => {
@@ -259,7 +259,7 @@ describe("proxy", () => {
 
 		// Assert
 		expect(mockProxyServer).toHaveBeenCalledTimes(3);
-		expect(context.stderr).toContain("Proxy failed!");
+		expect(context.stderr).toContain("Proxy failed after retry!");
 		expect(context.stderr).toContain("Keeping existing proxy running.");
 	});
 
@@ -428,7 +428,7 @@ describe("proxy", () => {
 		expect(context.user).toHaveBeenCalled();
 		expect(context.signOut).toHaveBeenCalled();
 		expect(context.signIn).toHaveBeenCalled();
-		expect(context.stderr).toContain("Proxy failed, retrying...");
+		expect(context.stderr).toContain("Proxy failed, retrying with fresh authentication...");
 		expect(context.stderr).toContain("Sign in failed!");
 		expect(mockProxyServer).toHaveBeenCalledTimes(1);
 	});
@@ -470,7 +470,7 @@ describe("proxy", () => {
 		// Assert
 		expect(context.signOut).toHaveBeenCalled();
 		expect(context.signIn).toHaveBeenCalled();
-		expect(context.stderr).toContain("Proxy failed, retrying...");
+		expect(context.stderr).toContain("Proxy failed, retrying with fresh authentication...");
 		expect(mockProxyServer).toHaveBeenCalledTimes(3);
 		expect(existingProxyDispose).toHaveBeenCalledTimes(1);
 	});
@@ -496,9 +496,63 @@ describe("proxy", () => {
 		await proxy.call(context);
 
 		// Assert
-		expect(context.stderr).toContain("Proxy failed, retrying...");
-		expect(context.stderr).toContain("Proxy failed!");
+		expect(context.stderr).toContain("Proxy failed, retrying with fresh authentication...");
+		expect(context.stderr).toContain("Proxy failed after retry!");
 		expect(context.stderr).not.toContain("Keeping existing proxy running.");
 		expect(mockProxyServer).toHaveBeenCalledTimes(2);
+	});
+
+	test("handles invalid token from different authority by forcing fresh authentication", async () => {
+		// Arrange
+		const oldUser = {
+			id_token: "old-authority-token-123",
+			profile: {
+				private_metadata: {
+					configurationUrl: "https://example.com/config",
+				},
+			},
+		} as unknown as User;
+		const newUser = {
+			id_token: "new-authority-token-456",
+			profile: {
+				private_metadata: {
+					configurationUrl: "https://example.com/config",
+				},
+			},
+		} as unknown as User;
+		const context = buildContextForTest({ user: oldUser });
+		const newProxyDispose = mock(() => {});
+
+		// First MCPProxyServer call fails with 401-like error, retry succeeds with new token
+		mockProxyServer
+			.mockRejectedValueOnce(new Error("Unauthorized"))
+			.mockReturnValueOnce(
+				Promise.resolve({ [Symbol.dispose]: newProxyDispose }),
+			);
+
+		// Mock signIn to return new user with fresh token
+		context.signIn = mock(() => Promise.resolve(newUser));
+
+		// Act
+		await proxy.call(context);
+
+		// Assert
+		expect(context.user).toHaveBeenCalled();
+		expect(context.signOut).toHaveBeenCalled(); // Should sign out old user
+		expect(context.signIn).toHaveBeenCalled(); // Should sign in with new authority
+		expect(context.stderr).toContain("Proxy failed, retrying with fresh authentication...");
+		expect(mockProxyServer).toHaveBeenCalledTimes(2);
+		
+		// Verify first call used old token
+		expect(mockProxyServer).toHaveBeenNthCalledWith(1, 
+			"http://localhost:3002/active-registry",
+			{ headers: { Authorization: "Bearer old-authority-token-123" } }
+		);
+		
+		// Verify retry call used new token
+		expect(mockProxyServer).toHaveBeenNthCalledWith(2,
+			"http://localhost:3002/active-registry", 
+			{ headers: { Authorization: "Bearer new-authority-token-456" } }
+		);
 	});
 });
