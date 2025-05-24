@@ -3,6 +3,7 @@ import {
 	PYLEE_OIDC_CLIENT_ID,
 	PYLEE_OIDC_REDIRECT_URI,
 } from "./env";
+import type { UserManagerSettings } from "oidc-client-ts";
 import { UserStore } from "./store";
 
 const userStore = new UserStore();
@@ -10,7 +11,7 @@ const authority = PYLEE_OIDC_AUTHORITY;
 const client_id = PYLEE_OIDC_CLIENT_ID;
 const redirect_uri = PYLEE_OIDC_REDIRECT_URI;
 
-export const settings = {
+export const settings: UserManagerSettings = {
 	authority,
 	client_id,
 	redirect_uri,

@@ -34,7 +34,7 @@ export async function authServer(
 				}
 			},
 			onListen() {},
-			onError: (error) => {
+			onError: (error: unknown) => {
 				reject(error);
 				return new Response(errorHTML, { headers });
 			},
