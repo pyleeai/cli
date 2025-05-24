@@ -16,6 +16,7 @@ export function buildContext(process: NodeJS.Process): Promise<LocalContext> {
 		fs,
 		path,
 		process,
+		userManager,
 		user: async () => {
 			const user = await userManager.signinSilent().catch(() => null);
 			await userManager.storeUser(user);

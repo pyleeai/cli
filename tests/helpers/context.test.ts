@@ -3,6 +3,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import type { LocalContext, User } from "../../src/types";
+import type { UserManager } from "oidc-client-ts";
 
 type DeepPartial<T> = T extends object
 	? { [P in keyof T]?: DeepPartial<T[P]> }
@@ -47,11 +48,21 @@ export function buildContextForTest(
 		},
 	} as unknown as NodeJS.Process;
 
+	const userManager = {
+		events: {
+			addAccessTokenExpiring: mock(() => {}),
+			addAccessTokenExpired: mock(() => {}),
+			addSilentRenewError: mock(() => {}),
+			addUserLoaded: mock(() => {}),
+		},
+	} as unknown as UserManager;
+
 	return {
 		os,
 		fs,
 		path,
 		process,
+		userManager,
 		user: mock(async () => user as unknown as User | null),
 		signIn: mock(async () => user as unknown as User | null),
 		signOut: mock(async () => void 0),
