@@ -50,7 +50,7 @@ export default async function (this: LocalContext): Promise<void> {
 
 			try {
 				await this.signOut();
-				user = await this.signIn();
+				const user = await this.signIn();
 
 				if (!user) {
 					this.process.stderr.write("Sign in failed!\n");

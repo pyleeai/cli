@@ -1,9 +1,9 @@
+import type { UserManagerSettings } from "oidc-client-ts";
 import {
 	PYLEE_OIDC_AUTHORITY,
 	PYLEE_OIDC_CLIENT_ID,
 	PYLEE_OIDC_REDIRECT_URI,
 } from "./env";
-import type { UserManagerSettings } from "oidc-client-ts";
 import { UserStore } from "./store";
 
 const userStore = new UserStore();
