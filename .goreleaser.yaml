@@ -8,6 +8,10 @@
 
 version: 2
 
+before:
+  hooks:
+    - ./scripts/replace-env-vars.sh
+
 builds:
   - builder: deno
     targets:
@@ -46,15 +50,7 @@ builds:
       - --include
       - src/html
       
-    # Hooks can be used to customize the final binary,
-    # for example, to run generators.
-    #
-    # Templates: allowed.
-    hooks:
-      pre:
-        - ./scripts/replace-env-vars.sh
-      post:
-        - ./scripts/restore-env-file.sh
+
       
 npms:
   # Package name.
@@ -91,3 +87,7 @@ release:
     ---
 
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+
+after:
+  hooks:
+    - ./scripts/restore-env-file.sh
