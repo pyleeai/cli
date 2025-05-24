@@ -2,7 +2,7 @@
 	"name": "@pyleeai/cli",
 	"projectName": "pylee",
 	"description": "Pylee AI CLI",
-	"version": "0.9.4",
+	"version": "0.9.5",
 	"license": "MIT",
 	"type": "module",
 	"module": "src/bin/cli.ts",
@@ -25,7 +25,7 @@
 		"@types/deno": "^2.3.0"
 	},
 	"dependencies": {
-		"@pyleeai/mcp-proxy-server": "0.9.2",
+		"@pyleeai/mcp-proxy-server": "0.9.5",
 		"@stricli/auto-complete": "^1.1.2",
 		"@stricli/core": "^1.1.2",
 		"conf": "^13.1.0",
