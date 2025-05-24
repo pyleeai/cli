@@ -215,7 +215,7 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(mockProxyServer).toHaveBeenCalledTimes(1);
-		expect(context.stderr).toContain("Failed to initialize proxy");
+		expect(context.stderr).toContain("Proxy failed!");
 	});
 
 	test("handles MCPProxyServer failure with existing proxy running", async () => {
@@ -246,7 +246,7 @@ describe("proxy", () => {
 
 		// Assert
 		expect(mockProxyServer).toHaveBeenCalledTimes(2);
-		expect(context.stderr).toContain("Failed to initialize proxy");
+		expect(context.stderr).toContain("Proxy failed!");
 		expect(context.stderr).toContain("Keeping existing proxy running.");
 	});
 
