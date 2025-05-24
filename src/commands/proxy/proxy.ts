@@ -46,7 +46,7 @@ export default async function (this: LocalContext): Promise<void> {
 
 			currentProxy = newProxy;
 		} catch {
-			this.process.stderr.write(`Failed to initialize proxy\n`);
+			this.process.stderr.write("Failed to initialize proxy\n");
 			if (currentProxy) {
 				this.process.stderr.write("Keeping existing proxy running.\n");
 			}

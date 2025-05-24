@@ -286,7 +286,7 @@ describe("proxy", () => {
 		} as unknown as User;
 		const context = buildContextForTest({ user });
 		// Remove process.on to simulate when it's not available
-		delete (context.process as any).on;
+		(context.process as unknown as { on?: unknown }).on = undefined;
 
 		// Act
 		await proxy.call(context);
