@@ -45,10 +45,32 @@ export default async function (this: LocalContext): Promise<void> {
 			}
 
 			currentProxy = newProxy;
-		} catch {
-			this.process.stderr.write("Failed to initialize proxy\n");
-			if (currentProxy) {
-				this.process.stderr.write("Keeping existing proxy running.\n");
+		} catch (error) {
+			this.process.stderr.write("Proxy failed, retrying...\n");
+
+			try {
+				await this.signOut();
+				user = await this.signIn();
+
+				if (!user) {
+					this.process.stderr.write("Sign in failed!\n");
+					return;
+				}
+
+				const idToken = user.id_token;
+				const headers = { Authorization: `Bearer ${idToken}` };
+				const configurationUrl = PYLEE_CONFIGURATION_URL;
+				const newProxy = await MCPProxyServer(configurationUrl, { headers });
+
+				if (currentProxy) {
+					dispose(currentProxy);
+				}
+				currentProxy = newProxy;
+			} catch {
+				this.process.stderr.write("Proxy failed!\n");
+				if (currentProxy) {
+					this.process.stderr.write("Keeping existing proxy running.\n");
+				}
 			}
 		}
 	};
