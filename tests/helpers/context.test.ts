@@ -2,8 +2,8 @@ import { mock } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { LocalContext, User } from "../../src/types";
 import type { UserManager } from "oidc-client-ts";
+import type { LocalContext, User } from "../../src/types";
 
 type DeepPartial<T> = T extends object
 	? { [P in keyof T]?: DeepPartial<T[P]> }

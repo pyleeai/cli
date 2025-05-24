@@ -1,7 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import type { UserManager } from "oidc-client-ts";
 import type { LocalContext, User } from "../src/types";
 
 const mockUser: Partial<User> = {
@@ -31,11 +32,21 @@ const mockUser: Partial<User> = {
 function createMockContext(): LocalContext {
 	let currentUser: Partial<User> | null = null;
 
+	const userManager = {
+		events: {
+			addAccessTokenExpiring: mock(() => {}),
+			addAccessTokenExpired: mock(() => {}),
+			addSilentRenewError: mock(() => {}),
+			addUserLoaded: mock(() => {}),
+		},
+	} as unknown as UserManager;
+
 	return {
 		os,
 		fs,
 		path,
 		process: {} as NodeJS.Process,
+		userManager,
 		user: async (): Promise<User | null> => {
 			return currentUser as User | null;
 		},
@@ -59,6 +70,7 @@ describe("Context", () => {
 		expect(context.fs).toBeDefined();
 		expect(context.path).toBeDefined();
 		expect(context.process).toBeDefined();
+		expect(context.userManager).toBeDefined();
 		expect(context.user).toBeDefined();
 		expect(typeof context.signIn).toBe("function");
 		expect(typeof context.signOut).toBe("function");

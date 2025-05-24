@@ -4,12 +4,14 @@
     "jsr:@std/assert@1": "1.0.11",
     "jsr:@std/internal@^1.0.5": "1.0.7",
     "npm:@biomejs/biome@1.9.4": "1.9.4",
-    "npm:@pyleeai/mcp-proxy-server@0.9.2": "0.9.2_typescript@5.8.3",
+    "npm:@pyleeai/mcp-proxy-server@0.9.3": "0.9.3_typescript@5.8.3",
+    "npm:@pyleeai/mcp-proxy-server@0.9.5": "0.9.5_typescript@5.8.3",
     "npm:@stricli/auto-complete@1.1.2": "1.1.2",
     "npm:@stricli/auto-complete@^1.1.2": "1.1.2",
     "npm:@stricli/core@1.1.2": "1.1.2",
     "npm:@stricli/core@^1.1.2": "1.1.2",
     "npm:@types/bun@latest": "1.2.13",
+    "npm:@types/deno@^2.3.0": "2.3.0",
     "npm:@types/node@*": "22.15.15",
     "npm:conf@13.1.0": "13.1.0_ajv@8.17.1",
     "npm:conf@^13.1.0": "13.1.0_ajv@8.17.1",
@@ -86,7 +88,7 @@
       "os": ["win32"],
       "cpu": ["x64"]
     },
-    "@modelcontextprotocol/sdk@1.12.0_express@5.1.0_zod@3.25.23": {
+    "@modelcontextprotocol/sdk@1.12.0_express@5.1.0_zod@3.25.28": {
       "integrity": "sha512-m//7RlINx1F3sz3KqwY1WWzVgTcYX52HYk4bJ1hkBXV3zccAEth+jRvG8DBRrdaQuRsPAJOx2MH3zaHNCKL7Zg==",
       "dependencies": [
         "ajv@6.12.6",
@@ -102,8 +104,17 @@
         "zod-to-json-schema"
       ]
     },
-    "@pyleeai/mcp-proxy-server@0.9.2_typescript@5.8.3": {
-      "integrity": "sha512-2Gtt1RiJrfHXVAMCjg6FRZ/2YUVVDMTAblFnThEiLmTWN2DJLQzh3R2L5ZYE3G4G+/Gp09Lx3aY0nnYmRxO78Q==",
+    "@pyleeai/mcp-proxy-server@0.9.3_typescript@5.8.3": {
+      "integrity": "sha512-Rhfm7PL1/KqTAX+qGSiD5XSbsiw7HLHOVrpqyNDZSIVZ2z9HTzA75vOgmYUW8LRq45VwY/h8GGv7dDQKHk6H7A==",
+      "dependencies": [
+        "@modelcontextprotocol/sdk",
+        "typescript",
+        "zod"
+      ],
+      "bin": true
+    },
+    "@pyleeai/mcp-proxy-server@0.9.5_typescript@5.8.3": {
+      "integrity": "sha512-lSxaw2zkHPNqfaDVw9Z+6OKd5w9VMjrSyKwJtwEdJ/LPsEBuuEm0UFz4sa9g8WM6tkPKlIB2BQ4Ev3Ykvzgrag==",
       "dependencies": [
         "@modelcontextprotocol/sdk",
         "typescript",
@@ -126,6 +137,9 @@
       "dependencies": [
         "bun-types"
       ]
+    },
+    "@types/deno@2.3.0": {
+      "integrity": "sha512-/4SyefQpKjwNKGkq9qG3Ln7MazfbWKvydyVFBnXzP5OQA4u1paoFtaOe1iHKycIWHHkhYag0lPxyheThV1ijzw=="
     },
     "@types/node@22.15.15": {
       "integrity": "sha512-R5muMcZob3/Jjchn5LcO8jdKwSCbzqmPB6ruBxMcf9kbxtniZHP327s6C37iOfuw8mbKK3cAQa7sEl7afLrQ8A==",
@@ -760,20 +774,20 @@
     "wrappy@1.0.2": {
       "integrity": "sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ=="
     },
-    "zod-to-json-schema@3.24.5_zod@3.25.23": {
+    "zod-to-json-schema@3.24.5_zod@3.25.28": {
       "integrity": "sha512-/AuWwMP+YqiPbsJx5D6TfgRTc4kTLjsh5SOcd4bLsfUg2RcEXrFMJl1DGgdHy2aCfsIA/cr/1JM0xcB2GZji8g==",
       "dependencies": [
         "zod"
       ]
     },
-    "zod@3.25.23": {
-      "integrity": "sha512-Od2bdMosahjSrSgJtakrwjMDb1zM1A3VIHCPGveZt/3/wlrTWBya2lmEh2OYe4OIu8mPTmmr0gnLHIWQXdtWBg=="
+    "zod@3.25.28": {
+      "integrity": "sha512-/nt/67WYKnr5by3YS7LroZJbtcCBurDKKPBPWWzaxvVCGuG/NOsiKkrjoOhI8mJ+SQUXEbUzeB3S+6XDUEEj7Q=="
     }
   },
   "workspace": {
     "dependencies": [
       "jsr:@std/assert@1",
-      "npm:@pyleeai/mcp-proxy-server@0.9.2",
+      "npm:@pyleeai/mcp-proxy-server@0.9.3",
       "npm:@stricli/auto-complete@1.1.2",
       "npm:@stricli/core@1.1.2",
       "npm:conf@13.1.0",
@@ -783,10 +797,11 @@
     "packageJson": {
       "dependencies": [
         "npm:@biomejs/biome@1.9.4",
-        "npm:@pyleeai/mcp-proxy-server@0.9.2",
+        "npm:@pyleeai/mcp-proxy-server@0.9.5",
         "npm:@stricli/auto-complete@^1.1.2",
         "npm:@stricli/core@^1.1.2",
         "npm:@types/bun@latest",
+        "npm:@types/deno@^2.3.0",
         "npm:conf@^13.1.0",
         "npm:oidc-client-ts@^3.2.0",
         "npm:open@^10.1.2"
