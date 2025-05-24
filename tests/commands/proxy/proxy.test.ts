@@ -307,4 +307,56 @@ describe("proxy", () => {
 		// Assert
 		expect(context.exitCode).toBe(0); // SUCCESS
 	});
+
+	test("handles access token expired event", async () => {
+		// Arrange
+		const user = {
+			id_token: "test-token-123",
+			profile: {
+				private_metadata: {
+					configurationUrl: "https://example.com/config",
+				},
+			},
+		} as unknown as User;
+		const context = buildContextForTest({ user });
+		const oldProxyDispose = mock(() => {});
+		const newProxyDispose = mock(() => {});
+		mockProxyServer
+			.mockReturnValueOnce(Promise.resolve({ [Symbol.dispose]: oldProxyDispose }))
+			.mockReturnValueOnce(Promise.resolve({ [Symbol.dispose]: newProxyDispose }));
+
+		// Act
+		await proxy.call(context);
+		const tokenExpiredHandler = context.userManager.events.addAccessTokenExpired.mock.calls[0][0];
+		await tokenExpiredHandler();
+
+		// Assert
+		expect(mockProxyServer).toHaveBeenCalledTimes(2); // Initial + restart from expired event
+	});
+
+	test("handles silent renew error event", async () => {
+		// Arrange
+		const user = {
+			id_token: "test-token-123",
+			profile: {
+				private_metadata: {
+					configurationUrl: "https://example.com/config",
+				},
+			},
+		} as unknown as User;
+		const context = buildContextForTest({ user });
+		const oldProxyDispose = mock(() => {});
+		const newProxyDispose = mock(() => {});
+		mockProxyServer
+			.mockReturnValueOnce(Promise.resolve({ [Symbol.dispose]: oldProxyDispose }))
+			.mockReturnValueOnce(Promise.resolve({ [Symbol.dispose]: newProxyDispose }));
+
+		// Act
+		await proxy.call(context);
+		const silentRenewErrorHandler = context.userManager.events.addSilentRenewError.mock.calls[0][0];
+		await silentRenewErrorHandler();
+
+		// Assert
+		expect(mockProxyServer).toHaveBeenCalledTimes(2); // Initial + restart from silent renew error event
+	});
 });
