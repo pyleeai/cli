@@ -42,6 +42,7 @@ export function buildContextForTest(
 				return stderr;
 			}),
 		},
+		on: mock(() => {}),
 		env: options.env,
 		exit: (code: number) => {
 			exitCode = code;
