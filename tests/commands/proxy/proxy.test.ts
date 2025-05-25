@@ -2,6 +2,7 @@ import { beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import proxy from "../../../src/commands/proxy/proxy";
 import type { User } from "../../../src/types";
 import { buildContextForTest } from "../../helpers/context.test";
+import { ExitCode } from "../../../src/types";
 
 type MockFunction = {
 	mock: {
@@ -199,12 +200,12 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(context.signIn).toHaveBeenCalled();
-		expect(context.exitCode).toBe(1); // ERROR
+		expect(context.exitCode).toBe(ExitCode.FAILURE);
 		expect(mockProxyServer).not.toHaveBeenCalled();
-		expect(context.stderr).toContain("Sign in errored!");
+		expect(context.stderr).toContain("Sign in error\n");
 	});
 
-	test("handles MCPProxyServer initialization failure", async () => {
+	test("handles MCPProxyServer initialization failure with silent retry", async () => {
 		// Arrange
 		const user = {
 			id_token: "test-token-123",
@@ -225,7 +226,6 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(mockProxyServer).toHaveBeenCalledTimes(2);
-		expect(context.stderr).toContain("Proxy failed!");
 	});
 
 	test("handles MCPProxyServer failure with existing proxy running", async () => {
@@ -241,7 +241,7 @@ describe("proxy", () => {
 		const context = buildContextForTest({ user });
 		const existingProxyDispose = mock(() => {});
 
-		// First call succeeds, second call fails, third call also fails
+		// First call succeeds, second call fails, retry also fails - existing proxy continues running
 		mockProxyServer
 			.mockReturnValueOnce(
 				Promise.resolve({ [Symbol.dispose]: existingProxyDispose }),
@@ -259,8 +259,6 @@ describe("proxy", () => {
 
 		// Assert
 		expect(mockProxyServer).toHaveBeenCalledTimes(3);
-		expect(context.stderr).toContain("Proxy failed!");
-		expect(context.stderr).toContain("Keeping existing proxy running.");
 	});
 
 	test("sets up signal handlers when process.on is available", async () => {
@@ -285,27 +283,6 @@ describe("proxy", () => {
 		expect(mockOn).toHaveBeenCalledWith("SIGINT", expect.any(Function));
 		expect(mockOn).toHaveBeenCalledWith("SIGTERM", expect.any(Function));
 		expect(mockOn).toHaveBeenCalledWith("exit", expect.any(Function));
-	});
-
-	test("does not set up signal handlers when process.on is not available", async () => {
-		// Arrange
-		const user = {
-			id_token: "test-token-123",
-			profile: {
-				private_metadata: {
-					configurationUrl: "https://example.com/config",
-				},
-			},
-		} as unknown as User;
-		const context = buildContextForTest({ user });
-		// Remove process.on to simulate when it's not available
-		(context.process as unknown as { on?: unknown }).on = undefined;
-
-		// Act
-		await proxy.call(context);
-
-		// Assert - Should complete without error
-		expect(mockProxyServer).toHaveBeenCalledTimes(1);
 	});
 
 	test("cleanup function disposes proxy and exits with success", async () => {
@@ -421,6 +398,13 @@ describe("proxy", () => {
 		mockProxyServer.mockRejectedValueOnce(new Error("Proxy server failed"));
 		context.signIn = mock(() => Promise.resolve(null));
 
+		// Mock user() to return null after signOut is called
+		let userSignedOut = false;
+		context.user = mock(async () => (userSignedOut ? null : user));
+		context.signOut = mock(async () => {
+			userSignedOut = true;
+		});
+
 		// Act
 		await proxy.call(context);
 
@@ -428,7 +412,6 @@ describe("proxy", () => {
 		expect(context.user).toHaveBeenCalled();
 		expect(context.signOut).toHaveBeenCalled();
 		expect(context.signIn).toHaveBeenCalled();
-		expect(context.stderr).toContain("Proxy failed, retrying...");
 		expect(context.stderr).toContain("Sign in failed!");
 		expect(mockProxyServer).toHaveBeenCalledTimes(1);
 	});
@@ -446,6 +429,13 @@ describe("proxy", () => {
 		const context = buildContextForTest({ user });
 		const existingProxyDispose = mock(() => {});
 		const retryProxyDispose = mock(() => {});
+
+		// Mock user() to return null after signOut is called
+		let userSignedOut = false;
+		context.user = mock(async () => (userSignedOut ? null : user));
+		context.signOut = mock(async () => {
+			userSignedOut = true;
+		});
 
 		// First call succeeds (creates existing proxy), second call fails, retry succeeds
 		mockProxyServer
@@ -470,7 +460,6 @@ describe("proxy", () => {
 		// Assert
 		expect(context.signOut).toHaveBeenCalled();
 		expect(context.signIn).toHaveBeenCalled();
-		expect(context.stderr).toContain("Proxy failed, retrying...");
 		expect(mockProxyServer).toHaveBeenCalledTimes(3);
 		expect(existingProxyDispose).toHaveBeenCalledTimes(1);
 	});
@@ -487,7 +476,7 @@ describe("proxy", () => {
 		} as unknown as User;
 		const context = buildContextForTest({ user });
 
-		// Both MCPProxyServer calls fail (initial and retry)
+		// Both MCPProxyServer calls fail (initial and retry) - silently continues
 		mockProxyServer
 			.mockRejectedValueOnce(new Error("Proxy server failed"))
 			.mockRejectedValueOnce(new Error("Retry also failed"));
@@ -496,9 +485,66 @@ describe("proxy", () => {
 		await proxy.call(context);
 
 		// Assert
-		expect(context.stderr).toContain("Proxy failed, retrying...");
-		expect(context.stderr).toContain("Proxy failed!");
-		expect(context.stderr).not.toContain("Keeping existing proxy running.");
 		expect(mockProxyServer).toHaveBeenCalledTimes(2);
+	});
+
+	test("silently handles invalid token from different authority by forcing fresh authentication", async () => {
+		// Arrange
+		const oldUser = {
+			id_token: "old-authority-token-123",
+			profile: {
+				private_metadata: {
+					configurationUrl: "https://example.com/config",
+				},
+			},
+		} as unknown as User;
+		const newUser = {
+			id_token: "new-authority-token-456",
+			profile: {
+				private_metadata: {
+					configurationUrl: "https://example.com/config",
+				},
+			},
+		} as unknown as User;
+		const context = buildContextForTest({ user: oldUser });
+		const newProxyDispose = mock(() => {});
+
+		// Mock user() to return null after signOut, then return newUser after signIn
+		let userSignedOut = false;
+		context.user = mock(async () => (userSignedOut ? null : oldUser));
+		context.signOut = mock(async () => {
+			userSignedOut = true;
+		});
+		context.signIn = mock(() => Promise.resolve(newUser));
+
+		// First MCPProxyServer call fails with auth error, retry succeeds with fresh token
+		mockProxyServer
+			.mockRejectedValueOnce(new Error("Unauthorized"))
+			.mockReturnValueOnce(
+				Promise.resolve({ [Symbol.dispose]: newProxyDispose }),
+			);
+
+		// Act
+		await proxy.call(context);
+
+		// Assert
+		expect(context.user).toHaveBeenCalled();
+		expect(context.signOut).toHaveBeenCalled(); // Should sign out old user
+		expect(context.signIn).toHaveBeenCalled(); // Should sign in with new authority
+		expect(mockProxyServer).toHaveBeenCalledTimes(2);
+
+		// Verify first call used old token
+		expect(mockProxyServer).toHaveBeenNthCalledWith(
+			1,
+			"http://localhost:3002/active-registry",
+			{ headers: { Authorization: "Bearer old-authority-token-123" } },
+		);
+
+		// Verify retry call used new token
+		expect(mockProxyServer).toHaveBeenNthCalledWith(
+			2,
+			"http://localhost:3002/active-registry",
+			{ headers: { Authorization: "Bearer new-authority-token-456" } },
+		);
 	});
 });

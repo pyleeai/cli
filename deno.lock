@@ -5,7 +5,7 @@
     "jsr:@std/internal@^1.0.5": "1.0.7",
     "npm:@biomejs/biome@1.9.4": "1.9.4",
     "npm:@pyleeai/mcp-proxy-server@0.9.3": "0.9.3_typescript@5.8.3",
-    "npm:@pyleeai/mcp-proxy-server@0.9.5": "0.9.5_typescript@5.8.3",
+    "npm:@pyleeai/mcp-proxy-server@0.9.6": "0.9.6_typescript@5.8.3",
     "npm:@stricli/auto-complete@1.1.2": "1.1.2",
     "npm:@stricli/auto-complete@^1.1.2": "1.1.2",
     "npm:@stricli/core@1.1.2": "1.1.2",
@@ -113,8 +113,8 @@
       ],
       "bin": true
     },
-    "@pyleeai/mcp-proxy-server@0.9.5_typescript@5.8.3": {
-      "integrity": "sha512-lSxaw2zkHPNqfaDVw9Z+6OKd5w9VMjrSyKwJtwEdJ/LPsEBuuEm0UFz4sa9g8WM6tkPKlIB2BQ4Ev3Ykvzgrag==",
+    "@pyleeai/mcp-proxy-server@0.9.6_typescript@5.8.3": {
+      "integrity": "sha512-WtfFb6/8UhaVuF86awh9VZZZydsimUdhqZBBTtLTOOXinc4GrfnYX8Mav3H4Po+z6ouJ3Ht63gn9bPwR45LyZw==",
       "dependencies": [
         "@modelcontextprotocol/sdk",
         "typescript",
@@ -797,7 +797,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@biomejs/biome@1.9.4",
-        "npm:@pyleeai/mcp-proxy-server@0.9.5",
+        "npm:@pyleeai/mcp-proxy-server@0.9.6",
         "npm:@stricli/auto-complete@^1.1.2",
         "npm:@stricli/core@^1.1.2",
         "npm:@types/bun@latest",

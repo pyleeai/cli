@@ -2,87 +2,45 @@ import { MCPProxyServer } from "@pyleeai/mcp-proxy-server";
 import { PYLEE_CONFIGURATION_URL } from "../../env.ts";
 import { ExitCode, type LocalContext } from "../../types.ts";
 
+const configurationUrl = PYLEE_CONFIGURATION_URL;
+
 export default async function (this: LocalContext): Promise<void> {
 	let currentProxy: Disposable | null = null;
 
 	const auth = async () => {
-		let user = await this.user();
-
-		if (!user) {
-			try {
-				user = await this.signIn();
-
-				if (!user) {
-					this.process.stderr.write("Sign in failed!\n");
-					this.process.exit(ExitCode.FAILURE);
-					return null;
-				}
-			} catch {
-				this.process.stderr.write("Sign in errored!\n");
-				this.process.exit(ExitCode.ERROR);
-				return null;
-			}
-		}
-
+		const user = (await this.user()) || (await this.signIn());
+		if (!user) throw new Error("Sign in failed!");
 		return user;
 	};
 
-	const proxy = async () => {
-		try {
-			const user = await auth();
-
-			if (!user) return;
-
-			const idToken = user.id_token;
-			const headers = { Authorization: `Bearer ${idToken}` };
-			const configurationUrl = PYLEE_CONFIGURATION_URL;
-			const newProxy = await MCPProxyServer(configurationUrl, { headers });
-
-			if (currentProxy) {
-				dispose(currentProxy);
-			}
-
-			currentProxy = newProxy;
-		} catch (error) {
-			this.process.stderr.write("Proxy failed, retrying...\n");
-
-			try {
-				await this.signOut();
-				const user = await this.signIn();
-
-				if (!user) {
-					this.process.stderr.write("Sign in failed!\n");
-					return;
-				}
-
-				const idToken = user.id_token;
-				const headers = { Authorization: `Bearer ${idToken}` };
-				const configurationUrl = PYLEE_CONFIGURATION_URL;
-				const newProxy = await MCPProxyServer(configurationUrl, { headers });
-
-				if (currentProxy) {
-					dispose(currentProxy);
-				}
-				currentProxy = newProxy;
-			} catch {
-				this.process.stderr.write("Proxy failed!\n");
-				if (currentProxy) {
-					this.process.stderr.write("Keeping existing proxy running.\n");
-				}
-			}
-		}
+	const createProxy = async () => {
+		const user = await auth();
+		const headers = { Authorization: `Bearer ${user.id_token}` };
+		const newProxy = await MCPProxyServer(configurationUrl, { headers });
+		using oldProxy = currentProxy;
+		currentProxy = newProxy;
 	};
 
-	const dispose = (resource: Disposable) => {
-		using _resource = resource;
-	};
+	const proxy = () =>
+		createProxy().catch(() =>
+			this.signOut()
+				.then(createProxy)
+				.catch((error) => failure(error.message)),
+		);
 
 	const cleanup = () => {
-		if (currentProxy) {
-			dispose(currentProxy);
-		}
+		using oldProxy = currentProxy;
+	};
 
+	const success = () => {
+		cleanup();
 		this.process.exit(ExitCode.SUCCESS);
+	};
+
+	const failure = (message: string) => {
+		cleanup();
+		this.process.stderr.write(`${message}\n`);
+		this.process.exit(ExitCode.FAILURE);
 	};
 
 	this.userManager.events.addAccessTokenExpiring(async () => {
@@ -97,11 +55,9 @@ export default async function (this: LocalContext): Promise<void> {
 		await proxy();
 	});
 
-	if (typeof this.process.on === "function") {
-		this.process.on("SIGINT", cleanup);
-		this.process.on("SIGTERM", cleanup);
-		this.process.on("exit", cleanup);
-	}
+	this.process.on("SIGINT", success);
+	this.process.on("SIGTERM", success);
+	this.process.on("exit", success);
 
 	await proxy();
 }
