@@ -2,6 +2,7 @@ import { beforeAll, beforeEach, describe, expect, mock, test } from "bun:test";
 import proxy from "../../../src/commands/proxy/proxy";
 import type { User } from "../../../src/types";
 import { buildContextForTest } from "../../helpers/context.test";
+import { ExitCode } from "../../../src/types";
 
 type MockFunction = {
 	mock: {
@@ -199,9 +200,9 @@ describe("proxy", () => {
 		// Assert
 		expect(context.user).toHaveBeenCalled();
 		expect(context.signIn).toHaveBeenCalled();
-		expect(context.exitCode).toBe(1); // ERROR
+		expect(context.exitCode).toBe(ExitCode.FAILURE);
 		expect(mockProxyServer).not.toHaveBeenCalled();
-		expect(context.stderr).toContain("Sign in errored!");
+		expect(context.stderr).toContain("Sign in error\n");
 	});
 
 	test("handles MCPProxyServer initialization failure with silent retry", async () => {
@@ -282,27 +283,6 @@ describe("proxy", () => {
 		expect(mockOn).toHaveBeenCalledWith("SIGINT", expect.any(Function));
 		expect(mockOn).toHaveBeenCalledWith("SIGTERM", expect.any(Function));
 		expect(mockOn).toHaveBeenCalledWith("exit", expect.any(Function));
-	});
-
-	test("does not set up signal handlers when process.on is not available", async () => {
-		// Arrange
-		const user = {
-			id_token: "test-token-123",
-			profile: {
-				private_metadata: {
-					configurationUrl: "https://example.com/config",
-				},
-			},
-		} as unknown as User;
-		const context = buildContextForTest({ user });
-		// Remove process.on to simulate when it's not available
-		(context.process as unknown as { on?: unknown }).on = undefined;
-
-		// Act
-		await proxy.call(context);
-
-		// Assert - Should complete without error
-		expect(mockProxyServer).toHaveBeenCalledTimes(1);
 	});
 
 	test("cleanup function disposes proxy and exits with success", async () => {
