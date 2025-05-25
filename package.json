@@ -2,7 +2,7 @@
 	"name": "@pyleeai/cli",
 	"projectName": "pylee",
 	"description": "Pylee AI CLI",
-	"version": "0.9.6-rc.4",
+	"version": "0.9.6",
 	"license": "MIT",
 	"type": "module",
 	"module": "src/bin/cli.ts",
