@@ -2,58 +2,45 @@ import { MCPProxyServer } from "@pyleeai/mcp-proxy-server";
 import { PYLEE_CONFIGURATION_URL } from "../../env.ts";
 import { ExitCode, type LocalContext } from "../../types.ts";
 
+const configurationUrl = PYLEE_CONFIGURATION_URL;
+
 export default async function (this: LocalContext): Promise<void> {
 	let currentProxy: Disposable | null = null;
 
 	const auth = async () => {
-		let user = await this.user();
-
-		if (!user) {
-			try {
-				user = await this.signIn();
-
-				if (!user) {
-					this.process.stderr.write("Sign in failed!\n");
-					this.process.exit(ExitCode.FAILURE);
-					return null;
-				}
-			} catch {
-				this.process.stderr.write("Sign in errored!\n");
-				this.process.exit(ExitCode.ERROR);
-				return null;
-			}
-		}
-
+		const user = (await this.user()) || (await this.signIn());
+		if (!user) throw new Error("Sign in failed!");
 		return user;
 	};
 
 	const createProxy = async () => {
 		const user = await auth();
-		if (!user) return;
-		
 		const headers = { Authorization: `Bearer ${user.id_token}` };
-		const newProxy = await MCPProxyServer(PYLEE_CONFIGURATION_URL, { headers });
-		
-		if (currentProxy) dispose(currentProxy);
+		const newProxy = await MCPProxyServer(configurationUrl, { headers });
+		using oldProxy = currentProxy;
 		currentProxy = newProxy;
 	};
 
-	const proxy = () => {
-		return createProxy().catch(() => 
-			this.signOut().then(createProxy).catch(() => {})
+	const proxy = () =>
+		createProxy().catch(() =>
+			this.signOut()
+				.then(createProxy)
+				.catch((error) => failure(error.message)),
 		);
-	};
-
-	const dispose = (resource: Disposable) => {
-		using _resource = resource;
-	};
 
 	const cleanup = () => {
-		if (currentProxy) {
-			dispose(currentProxy);
-		}
+		using oldProxy = currentProxy;
+	};
 
+	const success = () => {
+		cleanup();
 		this.process.exit(ExitCode.SUCCESS);
+	};
+
+	const failure = (message: string) => {
+		cleanup();
+		this.process.stderr.write(`${message}\n`);
+		this.process.exit(ExitCode.FAILURE);
 	};
 
 	this.userManager.events.addAccessTokenExpiring(async () => {
@@ -68,11 +55,9 @@ export default async function (this: LocalContext): Promise<void> {
 		await proxy();
 	});
 
-	if (typeof this.process.on === "function") {
-		this.process.on("SIGINT", cleanup);
-		this.process.on("SIGTERM", cleanup);
-		this.process.on("exit", cleanup);
-	}
+	this.process.on("SIGINT", success);
+	this.process.on("SIGTERM", success);
+	this.process.on("exit", success);
 
 	await proxy();
 }
