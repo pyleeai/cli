@@ -1,25 +1,21 @@
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { UserStore } from "../src/store";
 
 describe("settings", () => {
-	const originalEnv = { ...process.env };
 	const mockEnv = {
 		PYLEE_OIDC_AUTHORITY: "mock-authority",
 		PYLEE_OIDC_CLIENT_ID: "mock-client-id",
 		PYLEE_OIDC_REDIRECT_URI: "mock-redirect-uri",
+		PYLEE_OIDC_PORT: "mock-port",
+		PYLEE_CONFIGURATION_URL: "mock-config-url",
 	};
 
 	beforeEach(() => {
-		for (const [key, value] of Object.entries(mockEnv)) {
-			process.env[key] = value;
-		}
-
-		delete require.cache[require.resolve("../src/env")];
-		delete require.cache[require.resolve("../src/settings")];
+		mock.module("../src/env", () => mockEnv);
 	});
 
 	afterEach(() => {
-		process.env = { ...originalEnv };
+		mock.restore();
 	});
 
 	test("settings has the correct structure and properties", () => {
