@@ -146,7 +146,7 @@ describe("proxy", () => {
 			id_token: "test-token-123",
 		} as unknown as User;
 		const context = buildContextForTest({ user });
-		const mockOn = mock(() => {});
+		const mockOn = mock(() => context.process);
 		context.process.on = mockOn;
 		const { default: proxy } = await import(
 			"../../../src/commands/proxy/proxy"
