@@ -43,18 +43,10 @@ export default async function (this: LocalContext): Promise<void> {
 		this.process.exit(ExitCode.FAILURE);
 	};
 
-	this.userManager.events.addAccessTokenExpiring(async () => {
-		await proxy();
-	});
-
-	this.userManager.events.addAccessTokenExpired(async () => {
-		await proxy();
-	});
-
-	this.userManager.events.addSilentRenewError(async () => {
-		await proxy();
-	});
-
+	this.userManager.events.addAccessTokenExpiring(proxy);
+	this.userManager.events.addAccessTokenExpired(proxy);
+	this.userManager.events.addSilentRenewError(proxy);
+	this.process.on("unhandledRejection", proxy);
 	this.process.on("SIGINT", success);
 	this.process.on("SIGTERM", success);
 	this.process.on("exit", success);
