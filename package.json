@@ -5,7 +5,10 @@
 	"version": "0.9.9-rc.2",
 	"license": "MIT",
 	"type": "module",
-	"module": "src/bin/cli.ts",
+	"module": "bundle/cli.js",
+	"bin": {
+		"pylee": "bundle/cli.js"
+	},
 	"private": true,
 	"scripts": {
 		"lint": "biome lint",
