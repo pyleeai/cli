@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { PYLEE_OIDC_PORT } from "./env";
 
 export interface AuthServerSetupOptions {
@@ -11,11 +14,15 @@ export async function authServer(
 	const { signinRedirectCallback, signal } = options;
 	const port = Number(PYLEE_OIDC_PORT);
 	const headers = { "Content-Type": "text/html" };
-	const successHTML = await Deno.readTextFile(
-		new URL("./html/success.html", import.meta.url),
+	const __filename = fileURLToPath(import.meta.url);
+	const __dirname = dirname(__filename);
+	const successHTML = await readFile(
+		join(__dirname, "html", "success.html"),
+		"utf-8",
 	);
-	const errorHTML = await Deno.readTextFile(
-		new URL("./html/error.html", import.meta.url),
+	const errorHTML = await readFile(
+		join(__dirname, "html", "error.html"),
+		"utf-8",
 	);
 
 	return new Promise<Request>((resolve, reject) => {
