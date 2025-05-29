@@ -26,25 +26,49 @@ export async function authServer(
 	);
 
 	return new Promise<Request>((resolve, reject) => {
-		Deno.serve({
-			port,
-			hostname: "0.0.0.0",
-			signal,
-			handler: async (request: Request) => {
-				try {
-					await signinRedirectCallback(request.url);
-					resolve(request);
-					return new Response(successHTML, { headers });
-				} catch (err) {
-					reject(err);
+		if (typeof Bun !== "undefined") {
+			const server = Bun.serve({
+				port,
+				async fetch(request) {
+					try {
+						await signinRedirectCallback(request.url);
+						resolve(request);
+						return new Response(successHTML, { headers });
+					} catch (error) {
+						reject(error);
+						return new Response(errorHTML, { headers });
+					} finally {
+						server.stop();
+					}
+				},
+				error(error) {
+					reject(error);
+					server.stop();
+				},
+			});
+		} else if (typeof Deno !== "undefined") {
+			Deno.serve({
+				port,
+				hostname: "0.0.0.0",
+				signal,
+				handler: async (request: Request) => {
+					try {
+						await signinRedirectCallback(request.url);
+						resolve(request);
+						return new Response(successHTML, { headers });
+					} catch (err) {
+						reject(err);
+						return new Response(errorHTML, { headers });
+					}
+				},
+				onListen() {},
+				onError: (error: unknown) => {
+					reject(error);
 					return new Response(errorHTML, { headers });
-				}
-			},
-			onListen() {},
-			onError: (error: unknown) => {
-				reject(error);
-				return new Response(errorHTML, { headers });
-			},
-		});
+				},
+			});
+		} else {
+			reject(new Error("Unsupported runtime: neither Bun nor Deno detected"));
+		}
 	});
 }
