@@ -1,4 +1,4 @@
-#!/usr/bin/env deno
+#!/usr/bin/env deno --allow-env --allow-read --allow-write --allow-net --allow-sys --allow-run 
 
 import process from "node:process";
 import { run } from "@stricli/core";
