@@ -1,7 +1,8 @@
 {
 	"tasks": {
 		"dev": "deno run --unstable-sloppy-imports --allow-env --allow-read --allow-write --allow-net --allow-sys --allow-run --node-modules-dir ./src/bin/cli.ts",
-		"build": "deno compile --unstable-sloppy-imports --node-modules-dir --allow-env --allow-read --allow-write --allow-net --allow-sys --allow-run ./src/bin/cli.ts",
+		"bundle": "deno run -A ./bundle.ts",
+		"build": "deno compile --unstable-sloppy-imports --allow-env --allow-read --allow-write --allow-net --allow-sys --allow-run --node-modules-dir ./src/bin/cli.ts",
 		"test": "deno test --allow-env --allow-read --allow-write --allow-net --allow-sys --allow-run --node-modules-dir"
 	},
 	"imports": {

@@ -24,6 +24,8 @@ node_modules/
 jspm_packages/
 
 *.tsbuildinfo
+build
+bundle
 dist
 # Added by goreleaser init:
 dist/
