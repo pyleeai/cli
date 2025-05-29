@@ -4,7 +4,7 @@
     "": {
       "name": "@pyleeai/cli",
       "dependencies": {
-        "@pyleeai/mcp-proxy-server": "0.9.8-rc.1",
+        "@pyleeai/mcp-proxy-server": "0.9.9-rc.1",
         "@stricli/auto-complete": "^1.1.2",
         "@stricli/core": "^1.1.2",
         "conf": "^13.1.0",
@@ -42,7 +42,7 @@
 
     "@modelcontextprotocol/sdk": ["@modelcontextprotocol/sdk@1.11.0", "", { "dependencies": { "content-type": "^1.0.5", "cors": "^2.8.5", "cross-spawn": "^7.0.3", "eventsource": "^3.0.2", "express": "^5.0.1", "express-rate-limit": "^7.5.0", "pkce-challenge": "^5.0.0", "raw-body": "^3.0.0", "zod": "^3.23.8", "zod-to-json-schema": "^3.24.1" } }, "sha512-k/1pb70eD638anoi0e8wUGAlbMJXyvdV4p62Ko+EZ7eBe1xMx8Uhak1R5DgfoofsK5IBBnRwsYGTaLZl+6/+RQ=="],
 
-    "@pyleeai/mcp-proxy-server": ["@pyleeai/mcp-proxy-server@0.9.8-rc.1", "", { "dependencies": { "@modelcontextprotocol/sdk": "^1.10.1", "zod": "^3.24.3" }, "peerDependencies": { "typescript": "^5.0.0" }, "bin": { "mcp-proxy-server": "build/main.js" } }, "sha512-4tts9oeKfkvgx2t/EVoTJ9N2F4rz0UUT5fg+HGyhv+W10vDklxdae3+NEQO38W1OXW7HWEj486ir6IIbO8CLZg=="],
+    "@pyleeai/mcp-proxy-server": ["@pyleeai/mcp-proxy-server@0.9.9-rc.1", "", { "dependencies": { "@modelcontextprotocol/sdk": "^1.10.1", "zod": "^3.24.3" }, "peerDependencies": { "typescript": "^5.0.0" }, "bin": { "mcp-proxy-server": "build/main.js" } }, "sha512-XJIPyHt8L5BInTf1g4Gm/ZKFvjo5JHSu5IBqgYR2E8lpPewsXkzUCo++bA1c3LGwidUDl1qvTajJjJVyUD0cHQ=="],
 
     "@stricli/auto-complete": ["@stricli/auto-complete@1.1.2", "", { "dependencies": { "@stricli/core": "^1.1.2" }, "bin": { "auto-complete": "dist/bin/cli.js" } }, "sha512-sTNMh2bOvGH4meWSm4QCjbOCT1+8VSDbOkiOB6nYLaJZOr4CnWbn1s8N5h1GI6gMosUNP7waRr6FJVBhn/JfsQ=="],
 
